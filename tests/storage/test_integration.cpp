@@ -3,16 +3,25 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
-
 #include <boost/test/unit_test.hpp>
-
 #include "vault-server/src/storage/database_factory.h"
 
 namespace db::test
 {
 
+// Интеграционные тесты - проверяют взаимодействие всех компонентов
 BOOST_AUTO_TEST_SUITE(IntegrationTests)
 
+/**
+ * @brief Тест: полный рабочий цикл с БД
+ * 
+ * Проверяет сквозной сценарий работы:
+ * - Создание схемы БД
+ * - Вставка данных через подготовленные запросы
+ * - Выборка с фильтрацией
+ * - Обновление в транзакции
+ * - Удаление данных
+ */
 BOOST_AUTO_TEST_CASE(test_complete_workflow)
 {
     auto db = DatabaseFactory::create(DatabaseType::Sqlite);
@@ -21,7 +30,7 @@ BOOST_AUTO_TEST_CASE(test_complete_workflow)
     config["database"] = "./test_data/integration_test.db";
     db->initialize(config);
 
-    // Create schema
+    // 1. Создание схемы БД
     db->execute("DROP TABLE IF EXISTS products");
     db->execute(R"(
         CREATE TABLE products (
@@ -33,7 +42,7 @@ BOOST_AUTO_TEST_CASE(test_complete_workflow)
         )
     )");
 
-    // Insert data using prepared statements
+    // 2. Вставка данных с использованием подготовленных запросов
     auto conn = db->getConnection();
     auto insertStmt = conn->prepareStatement(
         "INSERT INTO products (name, price, stock) VALUES (@name, @price, @stock)"
@@ -55,17 +64,7 @@ BOOST_AUTO_TEST_CASE(test_complete_workflow)
         std::cout << "Inserted " << name << ", rows affected: " << result << std::endl;
     }
 
-    // Проверяем все вставленные данные
-    auto checkRs = db->query("SELECT name, price, stock FROM products ORDER BY price");
-    std::cout << "All products in database:" << std::endl;
-    while (checkRs->next())
-    {
-        std::cout
-            << "  " << checkRs->getString(0) << " - price: " << checkRs->getDouble(1)
-            << ", stock: " << checkRs->getInt64(2) << std::endl;
-    }
-
-    // Query with filter - only products with price > 50
+    // 3. Выборка с фильтром - только товары дороже 50
     auto queryStmt = conn->prepareStatement(
         "SELECT name, price, stock FROM products WHERE price > @min_price ORDER BY price"
     );
@@ -89,37 +88,45 @@ BOOST_AUTO_TEST_CASE(test_complete_workflow)
         BOOST_CHECK_CLOSE(price, expectedPrices[idx], 0.01);
         idx++;
     }
-    BOOST_CHECK_EQUAL(idx, 2);
+    BOOST_CHECK_EQUAL(idx, 2);  // Должны получить 2 товара
 
-    // Update with transaction
+    // 4. Обновление в транзакции
     db->transaction([&]()
-                    {
+    {
         conn->execute("UPDATE products SET stock = stock - 1 WHERE name = 'Laptop'");
-        conn->execute("UPDATE products SET stock = stock - 5 WHERE name = 'Mouse'"); });
+        conn->execute("UPDATE products SET stock = stock - 5 WHERE name = 'Mouse'");
+    });
 
-    // Verify update
+    // Проверяем обновление
     rs = db->query("SELECT stock FROM products WHERE name = 'Laptop'");
     rs->next();
-    BOOST_CHECK_EQUAL(rs->getInt64(0), 9);
+    BOOST_CHECK_EQUAL(rs->getInt64(0), 9);  // Было 10, стало 9
 
     rs = db->query("SELECT stock FROM products WHERE name = 'Mouse'");
     rs->next();
-    BOOST_CHECK_EQUAL(rs->getInt64(0), 45);
+    BOOST_CHECK_EQUAL(rs->getInt64(0), 45);  // Было 50, стало 45
 
-    // Delete with prepared statement
+    // 5. Удаление через подготовленный запрос
     auto deleteStmt = conn->prepareStatement("DELETE FROM products WHERE stock = @stock");
     deleteStmt->bindInt64("@stock", 0);
     int64_t deleted = deleteStmt->execute();
-    BOOST_CHECK_EQUAL(deleted, 0);
+    BOOST_CHECK_EQUAL(deleted, 0);  // Нет товаров с нулевым запасом
 
-    // Final count
+    // Финальная проверка количества записей
     rs = db->query("SELECT COUNT(*) FROM products");
     rs->next();
-    BOOST_CHECK_EQUAL(rs->getInt64(0), 3);
+    BOOST_CHECK_EQUAL(rs->getInt64(0), 3);  // Все 3 товара на месте
 
     db->shutdown();
 }
 
+/**
+ * @brief Тест: конкурентные операции с БД
+ * 
+ * Проверяет работу нескольких потоков, одновременно обновляющих
+ * одну и ту же запись. Использует WAL режим и retry логику
+ * для обработки блокировок SQLite.
+ */
 BOOST_AUTO_TEST_CASE(test_concurrent_operations)
 {
     auto db = DatabaseFactory::create(DatabaseType::Sqlite);
@@ -128,81 +135,96 @@ BOOST_AUTO_TEST_CASE(test_concurrent_operations)
     config["database"] = "./test_data/concurrent_test.db";
     db->initialize(config);
 
+    // Создаём счётчик
     db->execute("DROP TABLE IF EXISTS counter");
     db->execute("CREATE TABLE counter (id INTEGER PRIMARY KEY, value INTEGER)");
     db->execute("INSERT INTO counter VALUES (1, 0)");
 
-    // Используем WAL режим для лучшей конкурентности
+    // Включаем WAL (Write-Ahead Logging) режим для лучшей конкурентности
     db->execute("PRAGMA journal_mode=WAL");
     db->execute("PRAGMA synchronous=NORMAL");
 
     std::vector<std::thread> threads;
-    std::atomic<int> successes { 0 };
+    std::atomic<int> successes{ 0 };
     std::mutex coutMutex;
 
+    // Запускаем 5 потоков, каждый увеличивает счётчик на 1
     for (int i = 0; i < 5; ++i)
     {
         threads.emplace_back(
             [&]()
             {
-            try {
-                // Используем retry логику для SQLite BUSY ошибок
-                int retries = 3;
-                while (retries-- > 0)
+                try
                 {
-                    try
+                    // Используем retry логику для SQLite BUSY ошибок
+                    int retries = 3;
+                    while (retries-- > 0)
                     {
-                        // Получаем отдельное соединение для каждого потока
-                        auto conn = db->getConnection();
-                        
-                        // Используем атомарный UPDATE вместо SELECT + UPDATE
-                        // Это позволяет избежать вложенных транзакций
-                        int64_t result = conn->execute(
-                            "UPDATE counter SET value = value + 1 WHERE id = 1"
-                        );
-                        
-                        if (result > 0) {
-                            successes++;
-                        }
-                        break;
-                    }
-                    catch (const std::exception& e)
-                    {
-                        if (retries == 0
-                            || (std::string(e.what()).find("locked") == std::string::npos &&
-                                std::string(e.what()).find("busy") == std::string::npos))
+                        try
                         {
-                            throw;
+                            // Получаем отдельное соединение для каждого потока
+                            auto conn = db->getConnection();
+
+                            // Используем атомарный UPDATE вместо SELECT + UPDATE
+                            // Это позволяет избежать вложенных транзакций и гонок
+                            int64_t result = conn->execute(
+                                "UPDATE counter SET value = value + 1 WHERE id = 1"
+                            );
+
+                            if (result > 0)
+                            {
+                                successes++;
+                            }
+                            break;  // Успех - выходим из цикла retry
                         }
-                        // Ждём перед повторной попыткой
-                        std::this_thread::sleep_for(std::chrono::milliseconds(10 * (3 - retries)));
+                        catch (const std::exception& e)
+                        {
+                            // Если БД заблокирована и есть попытки - ждём и повторяем
+                            if (retries == 0
+                                || (std::string(e.what()).find("locked") == std::string::npos &&
+                                    std::string(e.what()).find("busy") == std::string::npos))
+                            {
+                                throw;  // Не блокировка или кончились попытки
+                            }
+                            // Ждём перед повторной попыткой (экспоненциальная задержка)
+                            std::this_thread::sleep_for(std::chrono::milliseconds(10 * (3 - retries)));
+                        }
                     }
                 }
-            } catch (const std::exception& e) {
-                std::lock_guard<std::mutex> lock(coutMutex);
-                std::cout << "Concurrent operation failed: " << e.what() << std::endl;
-            } }
+                catch (const std::exception& e)
+                {
+                    std::lock_guard<std::mutex> lock(coutMutex);
+                    std::cout << "Concurrent operation failed: " << e.what() << std::endl;
+                }
+            }
         );
     }
 
+    // Ждём завершения всех потоков
     for (auto& t : threads)
     {
         t.join();
     }
 
-    // Проверяем результат
+    // Проверяем результат - все 5 операций должны быть успешными
     auto rs = db->query("SELECT value FROM counter WHERE id = 1");
     rs->next();
     int64_t finalValue = rs->getInt64(0);
     std::cout << "Final counter value: " << finalValue << ", successes: " << successes << std::endl;
 
-    // Все операции должны быть успешными
     BOOST_CHECK_EQUAL(finalValue, 5);
     BOOST_CHECK_EQUAL(successes, 5);
 
     db->shutdown();
 }
 
+/**
+ * @brief Тест: обработка ошибок и восстановление
+ * 
+ * Проверяет, что после ошибки (например, нарушение уникальности)
+ * БД остаётся в работоспособном состоянии и можно продолжать
+ * выполнять операции.
+ */
 BOOST_AUTO_TEST_CASE(test_error_handling_and_recovery)
 {
     auto db = DatabaseFactory::create(DatabaseType::Sqlite);
@@ -211,23 +233,24 @@ BOOST_AUTO_TEST_CASE(test_error_handling_and_recovery)
     config["database"] = "./test_data/error_test.db";
     db->initialize(config);
 
+    // Создаём таблицу с уникальным ограничением
     db->execute("DROP TABLE IF EXISTS error_test");
     db->execute("CREATE TABLE error_test (id INTEGER PRIMARY KEY, data TEXT UNIQUE)");
     db->execute("INSERT INTO error_test VALUES (1, 'unique_value')");
 
-    // Try to insert duplicate unique value
+    // Пытаемся вставить дубликат - должно выбросить исключение
     BOOST_CHECK_THROW(
         db->execute("INSERT INTO error_test VALUES (2, 'unique_value')"),
         std::runtime_error
     );
 
-    // Database should still be usable after error
+    // База данных должна остаться работоспособной после ошибки
     BOOST_CHECK_NO_THROW(db->execute("INSERT INTO error_test VALUES (2, 'another_value')"));
 
-    // Verify data
+    // Проверяем, что данные в БД корректны
     auto rs = db->query("SELECT COUNT(*) FROM error_test");
     rs->next();
-    BOOST_CHECK_EQUAL(rs->getInt64(0), 2);
+    BOOST_CHECK_EQUAL(rs->getInt64(0), 2);  // Должно быть 2 записи
 
     db->shutdown();
 }

@@ -1,18 +1,23 @@
+// Определяем название тестового модуля для Boost
 #define BOOST_TEST_MODULE "Vault Server Database Tests"
 
 #include <filesystem>
 #include <iostream>
-
 #include <boost/test/unit_test.hpp>
 
-// Global test fixture for database setup/cleanup
+/**
+ * @brief Глобальная фикстура для настройки и очистки тестового окружения
+ * 
+ * Выполняется один раз до начала всех тестов и после их завершения.
+ * Создаёт директорию для тестовых БД и удаляет все временные файлы.
+ */
 struct GlobalTestFixture
 {
     GlobalTestFixture()
     {
         std::cout << "=== Starting Database Tests ===" << std::endl;
 
-        // Create test directory if it doesn't exist
+        // Создаём директорию test_data, если она не существует
         std::error_code ec;
         std::filesystem::create_directories("./test_data", ec);
         if (ec)
@@ -25,18 +30,24 @@ struct GlobalTestFixture
                       << std::filesystem::absolute("./test_data") << std::endl;
         }
 
-        // Also create directory using absolute path to be safe
+        // Дополнительная проверка с абсолютным путём
         auto abs_path = std::filesystem::absolute("./test_data");
         std::filesystem::create_directories(abs_path, ec);
     }
 
+    /**
+     * @brief Очистка тестовых файлов после завершения всех тестов
+     * 
+     * Удаляет все созданные в процессе тестирования файлы БД
+     * и, если возможно, саму директорию test_data.
+     */
     ~GlobalTestFixture()
     {
         std::cout << "=== Cleaning up test files ===" << std::endl;
-        // Clean up test database files
         try
         {
             std::error_code ec;
+            // Список всех тестовых файлов БД для удаления
             std::filesystem::remove("./test_data/test.db", ec);
             std::filesystem::remove("./test_data/test2.db", ec);
             std::filesystem::remove("./test_data/transaction_test.db", ec);
@@ -59,14 +70,15 @@ struct GlobalTestFixture
             std::filesystem::remove("./test_data/test_factory.db", ec);
             std::filesystem::remove("./test_data/test_conn_string.db", ec);
 
-            // Remove directory if empty
+            // Удаляем директорию, если она пуста
             std::filesystem::remove_all("./test_data", ec);
         }
         catch (...)
         {
-            // Ignore cleanup errors
+            // Игнорируем ошибки при очистке
         }
     }
 };
 
+// Регистрируем глобальную фикстуру
 BOOST_GLOBAL_FIXTURE(GlobalTestFixture);
