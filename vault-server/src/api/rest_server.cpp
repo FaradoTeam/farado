@@ -9,6 +9,7 @@
 
 #include "handlers/auth_handler.h"
 #include "handlers/items_handler.h"
+
 #include "rest_server.h"
 
 namespace farado
@@ -19,63 +20,94 @@ namespace server
 RestServer::RestServer(const std::string& host, uint16_t port)
     : m_host(host)
     , m_port(port)
-    , m_baseUrl("http://" + host + ":" + std::to_string(port))
     , m_isRunning(false)
 {
-    LOG_INFO
-        << "RestServer created with host=" << m_host << ", port=" << m_port;
+    LOG_DEBUG
+        << "REST-сервера создан. Хост=" << m_host << ", порт=" << m_port << ".";
 }
 
 RestServer::~RestServer()
 {
-    stop();
+    stop(); // Гарантируем остановку сервера при разрушении объекта
 }
 
 bool RestServer::initialize()
 {
-    LOG_INFO << "Initializing REST server...";
+    LOG_DEBUG << "Инициализация REST-сервера...";
 
-    registerRoutes();
-    setupListener();
+    registerRoutes(); // Регистрируем все маршруты API
+    setupListener(); // Настраиваем HTTP-слушатель
 
-    LOG_INFO << "REST server initialized successfully";
+    LOG_DEBUG << "REST-сервера успешно инициализирован";
     return true;
 }
 
-void RestServer::setupListener()
+bool RestServer::start()
 {
-    const web::http::uri address = web::http::uri(m_baseUrl);
-    m_listener = std::make_unique<web::http::experimental::listener::http_listener>(
-        address
-    );
+    if (m_isRunning)
+    {
+        LOG_ERROR << "Сервер REST уже запущен";
+        return false;
+    }
 
-    m_listener->support(
-        [this](web::http::http_request request)
+    try
+    {
+        m_listener->open().wait(); // Открываем слушатель и ждем готовности
+        m_isRunning = true;
+        LOG_INFO
+            << "Сервер REST успешно запущен на "
+            << m_host << ":" << m_port;
+    }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR << "Не удалось запустить сервер: " << e.what();
+        return false;
+    }
+
+    return true;
+}
+
+void RestServer::stop()
+{
+    if (!m_isRunning)
+    {
+        return;
+    }
+
+    LOG_DEBUG << "Остановка REST-сервера...";
+    m_isRunning = false;
+
+    try
+    {
+        if (m_listener)
         {
-            try
-            {
-                handleRequest(std::move(request));
-            }
-            catch (const std::exception& e)
-            {
-                LOG_ERROR << "Request handling error: " << e.what();
-                web::json::value error;
-                error["code"] = web::json::value::number(500);
-                error["message"] = web::json::value::string(
-                    "Internal server error: " + std::string(e.what())
-                );
-                request.reply(web::http::status_codes::InternalError, error);
-            }
+            m_listener->close().wait(); // Закрываем слушатель и ждем завершения
         }
-    );
+    }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR << "Ошибка при остановке REST-сервера: " << e.what();
+    }
+
+    LOG_INFO << "Сервер REST остановлен";
+}
+
+void RestServer::setAuthMiddleware(std::shared_ptr<AuthMiddleware> middleware)
+{
+    m_authMiddleware = middleware;
 }
 
 void RestServer::registerRoutes()
 {
+    // TODO: добавить все необходимые обработчики
+
+    // Создаем обработчики
     auto itemsHandler = std::make_shared<handlers::ItemsHandler>();
     auto authHandler = std::make_shared<handlers::AuthHandler>(m_authMiddleware);
 
     // Публичные маршруты (без аутентификации)
+
+    // Вход в систему
     addRoute(
         web::http::methods::POST,
         "/auth/login",
@@ -89,6 +121,8 @@ void RestServer::registerRoutes()
         true // isPublic
     );
 
+    // Выход из системы (требует токен, но сам маршрут публичный,
+    // так как токен извлекается внутри обработчика)
     addRoute(
         web::http::methods::POST,
         "/auth/logout",
@@ -103,6 +137,8 @@ void RestServer::registerRoutes()
     );
 
     // Защищенные маршруты (требуют аутентификации)
+
+    // Получение списка элементов
     addRoute(
         web::http::methods::GET,
         "/api/items",
@@ -112,10 +148,10 @@ void RestServer::registerRoutes()
         )
         {
             itemsHandler->handleGetItems(request, userId);
-        },
-        false // requires auth
+        }
     );
 
+    // Создание нового элемента
     addRoute(
         web::http::methods::POST,
         "/api/items",
@@ -125,13 +161,13 @@ void RestServer::registerRoutes()
         )
         {
             itemsHandler->handleCreateItem(request, userId);
-        },
-        false
+        }
     );
 
+    // Получение элемента по ID (шаблон с параметром)
     addRoute(
         web::http::methods::GET,
-        R"(/api/items/(\d+))",
+        R"(/api/items/(\d+))", // Регулярное выражение для извлечения ID
         [itemsHandler](
             const web::http::http_request& request,
             const std::string& userId
@@ -142,6 +178,7 @@ void RestServer::registerRoutes()
         false
     );
 
+    // Обновление элемента
     addRoute(
         web::http::methods::PUT,
         R"(/api/items/(\d+))",
@@ -155,6 +192,7 @@ void RestServer::registerRoutes()
         false
     );
 
+    // Удаление элемента
     addRoute(
         web::http::methods::DEL,
         R"(/api/items/(\d+))",
@@ -168,7 +206,7 @@ void RestServer::registerRoutes()
         false
     );
 
-    // Health check - публичный
+    // Эндпоинт для проверки работоспособности сервера (health check)
     addRoute(
         web::http::methods::GET,
         "/health",
@@ -182,14 +220,133 @@ void RestServer::registerRoutes()
             response["timestamp"] = web::json::value::number(
                 std::chrono::duration_cast<std::chrono::seconds>(
                     std::chrono::system_clock::now().time_since_epoch()
-                ).count()
+                )
+                    .count()
             );
             request.reply(web::http::status_codes::OK, response);
         },
-        true // isPublic
+        true // публичный эндпоинт
     );
 
-    LOG_INFO << "Routes registered successfully, total: " << m_routes.size();
+    LOG_DEBUG
+        << "Успешно зарегистрированные маршруты, всего: " << m_routes.size();
+}
+
+void RestServer::setupListener()
+{
+    const web::http::uri address = web::http::uri(
+        "http://" + m_host + ":" + std::to_string(m_port)
+    );
+    m_listener = std::make_unique<web::http::experimental::listener::http_listener>(
+        address
+    );
+
+    // Устанавливаем универсальный обработчик всех запросов
+    m_listener->support(
+        [this](web::http::http_request request)
+        {
+            try
+            {
+                handleRequest(std::move(request));
+            }
+            catch (const std::exception& e)
+            {
+                // Глобальный обработчик ошибок — любое неперехваченное исключение
+                // приводит к ответу 500 Internal Server Error
+                LOG_ERROR << "Ошибка обработки запроса: " << e.what();
+                web::json::value error;
+                error["code"] = web::json::value::number(500);
+                error["message"] = web::json::value::string(
+                    "Internal server error: " + std::string(e.what())
+                );
+                request.reply(web::http::status_codes::InternalError, error);
+            }
+        }
+    );
+}
+
+void RestServer::handleRequest(web::http::http_request request)
+{
+    const std::string path = web::uri::decode(request.relative_uri().path());
+    const auto method = request.method();
+
+    LOG_INFO << "Входящий запрос: " << method << " " << path;
+
+    RouteHandler handler;
+    bool isPublic = false;
+    std::map<std::string, std::string> pathParams;
+
+    // Ищем обработчик для данного маршрута
+    if (!matchRoute(method, path, handler, isPublic, pathParams))
+    {
+        // Маршрут не найден — возвращаем 404
+        web::json::value error;
+        error["code"] = web::json::value::number(404);
+        error["message"] = web::json::value::string("Not found");
+        request.reply(web::http::status_codes::NotFound, error);
+        return;
+    }
+
+    // Применяем аутентификацию только для защищенных маршрутов
+    if (!isPublic)
+    {
+        std::string userId;
+        if (!applyAuthMiddleware(request, userId))
+        {
+            return; // Ответ уже отправлен в applyAuthMiddleware
+        }
+        handler(request, userId); // Вызываем обработчик с ID пользователя
+    }
+    else
+    {
+        handler(request, ""); // Публичный маршрут — userId не требуется
+    }
+}
+
+bool RestServer::applyAuthMiddleware(
+    const web::http::http_request& request,
+    std::string& userId
+)
+{
+    // Проверяем наличие middleware
+    if (!m_authMiddleware)
+    {
+        LOG_ERROR << "Auth middleware не установлено";
+        web::json::value error;
+        error["code"] = web::json::value::number(500);
+        error["message"] = web::json::value::string(
+            "Internal server error: auth middleware not configured"
+        );
+        request.reply(web::http::status_codes::InternalError, error);
+        return false;
+    }
+
+    // Ищем заголовок Authorization
+    auto authHeader = request.headers().find("Authorization");
+    if (authHeader == request.headers().end())
+    {
+        web::json::value error;
+        error["code"] = web::json::value::number(401);
+        error["message"] = web::json::value::string(
+            "Missing Authorization header"
+        );
+        request.reply(web::http::status_codes::Unauthorized, error);
+        return false;
+    }
+
+    // Валидируем токен
+    if (!m_authMiddleware->validateRequest(authHeader->second, userId))
+    {
+        web::json::value error;
+        error["code"] = web::json::value::number(401);
+        error["message"] = web::json::value::string(
+            "Invalid or expired token"
+        );
+        request.reply(web::http::status_codes::Unauthorized, error);
+        return false;
+    }
+
+    return true; // Аутентификация успешна
 }
 
 void RestServer::addRoute(
@@ -217,9 +374,11 @@ bool RestServer::matchRoute(
 {
     for (const auto& route : m_routes)
     {
+        // Проверяем соответствие HTTP-метода
         if (route.method != method)
             continue;
 
+        // Проверяем соответствие пути с помощью регулярного выражения
         std::regex pattern(route.pathPattern);
         std::smatch matches;
 
@@ -228,7 +387,7 @@ bool RestServer::matchRoute(
             handler = route.handler;
             isPublic = route.isPublic;
 
-            // Извлекаем параметры из пути (например, ID)
+            // Извлекаем параметры из пути (например, ID из /api/items/123)
             if (matches.size() > 1)
             {
                 params["id"] = matches[1].str();
@@ -236,144 +395,7 @@ bool RestServer::matchRoute(
             return true;
         }
     }
-    return false;
-}
-
-void RestServer::handleRequest(web::http::http_request request)
-{
-    const std::string path = web::uri::decode(request.relative_uri().path());
-    const auto method = request.method();
-
-    LOG_INFO << "Incoming request: " << method << " " << path;
-
-    RouteHandler handler;
-    bool isPublic = false;
-    std::map<std::string, std::string> pathParams;
-
-    if (!matchRoute(method, path, handler, isPublic, pathParams))
-    {
-        web::json::value error;
-        error["code"] = web::json::value::number(404);
-        error["message"] = web::json::value::string("Not found");
-        request.reply(web::http::status_codes::NotFound, error);
-        return;
-    }
-
-    // Аутентификация только для защищенных маршрутов
-    if (!isPublic)
-    {
-        std::string userId;
-        if (!applyAuthMiddleware(request, userId))
-        {
-            return; // Ответ уже отправлен в applyAuthMiddleware
-        }
-        handler(request, userId);
-    }
-    else
-    {
-        handler(request, "");
-    }
-}
-
-bool RestServer::applyAuthMiddleware(
-    const web::http::http_request& request,
-    std::string& userId
-)
-{
-    if (!m_authMiddleware)
-    {
-        LOG_ERROR << "Auth middleware not set";
-        web::json::value error;
-        error["code"] = web::json::value::number(500);
-        error["message"] = web::json::value::string(
-            "Internal server error: auth middleware not configured"
-        );
-        request.reply(web::http::status_codes::InternalError, error);
-        return false;
-    }
-
-    auto authHeader = request.headers().find("Authorization");
-    if (authHeader == request.headers().end())
-    {
-        web::json::value error;
-        error["code"] = web::json::value::number(401);
-        error["message"] = web::json::value::string(
-            "Missing Authorization header"
-        );
-        request.reply(web::http::status_codes::Unauthorized, error);
-        return false;
-    }
-
-    if (!m_authMiddleware->validateRequest(authHeader->second, userId))
-    {
-        web::json::value error;
-        error["code"] = web::json::value::number(401);
-        error["message"] = web::json::value::string(
-            "Invalid or expired token"
-        );
-        request.reply(web::http::status_codes::Unauthorized, error);
-        return false;
-    }
-
-    return true;
-}
-
-void RestServer::setAuthMiddleware(std::shared_ptr<AuthMiddleware> middleware)
-{
-    m_authMiddleware = middleware;
-    LOG_INFO << "Auth middleware set";
-}
-
-bool RestServer::start()
-{
-    if (m_isRunning)
-    {
-        LOG_ERROR << "REST server is already running";
-        return false;
-    }
-
-    LOG_INFO << "Starting REST server on " << m_host << ":" << m_port << "...";
-
-    try
-    {
-        m_listener->open().wait();
-        m_isRunning = true;
-        LOG_INFO
-            << "REST server started successfully on "
-            << m_host << ":" << m_port;
-    }
-    catch (const std::exception& e)
-    {
-        LOG_ERROR << "Failed to start server: " << e.what();
-        return false;
-    }
-
-    return true;
-}
-
-void RestServer::stop()
-{
-    if (!m_isRunning)
-    {
-        return;
-    }
-
-    LOG_INFO << "Stopping REST server...";
-    m_isRunning = false;
-
-    try
-    {
-        if (m_listener)
-        {
-            m_listener->close().wait();
-        }
-    }
-    catch (const std::exception& e)
-    {
-        LOG_ERROR << "Error stopping server: " << e.what();
-    }
-
-    LOG_INFO << "REST server stopped";
+    return false; // Маршрут не найден
 }
 
 } // namespace server

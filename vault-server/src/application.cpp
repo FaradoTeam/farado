@@ -26,32 +26,34 @@ Application::~Application()
 
 bool Application::initialize()
 {
-    LOG_INFO << "Initializing application...";
+    LOG_INFO << "Инициализация приложения...";
 
+    // TODO: Вынести в конфиг secret-key
     auto authMiddleware = std::make_shared<AuthMiddleware>(
-        "secret-key-here-from-config"
+        "your-very-long-secret-key-that-is-at-least-32-bytes-long!"
     );
 
+    // TODO: Вынести в конфиг хост и порт
     m_restServer = std::make_shared<RestServer>("0.0.0.0", 8080);
     m_restServer->setAuthMiddleware(authMiddleware);
 
     if (!m_restServer->initialize())
     {
-        LOG_ERROR << "Failed to initialize REST server";
+        LOG_ERROR << "Не удалось инициализировать REST-сервер";
         return false;
     }
 
-    LOG_INFO << "Application initialized successfully";
+    LOG_INFO << "Приложение успешно инициализировано";
     return true;
 }
 
 int Application::run()
 {
-    LOG_INFO << "Starting application...";
+    LOG_INFO << "Запуск приложения...";
 
     if (!initialize())
     {
-        LOG_ERROR << "Failed to initialize application";
+        LOG_ERROR << "Не удалось инициализировать приложение";
         return EXIT_FAILURE;
     }
 
@@ -59,11 +61,11 @@ int Application::run()
 
     if (!m_restServer->start())
     {
-        LOG_ERROR << "Failed to start REST server";
+        LOG_ERROR << "Не удалось запустить REST-сервер";
         return EXIT_FAILURE;
     }
 
-    LOG_INFO << "Application is running. Press Ctrl+C to stop.";
+    LOG_INFO << "Приложение запущено. Нажмите Ctrl+C для остановки.";
 
     while (m_isRunning)
     {
@@ -75,7 +77,7 @@ int Application::run()
 
 void Application::stop()
 {
-    LOG_INFO << "Stopping application...";
+    LOG_INFO << "Остановка приложения...";
     m_isRunning = false;
 
     if (m_restServer)
@@ -84,7 +86,7 @@ void Application::stop()
     }
 
     cleanup();
-    LOG_INFO << "Application stopped";
+    LOG_INFO << "Приложение остановлено";
 }
 
 void Application::cleanup()

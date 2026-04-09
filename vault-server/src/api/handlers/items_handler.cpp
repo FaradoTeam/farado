@@ -1,4 +1,3 @@
-#include <iostream>
 #include <regex>
 #include <sstream>
 
@@ -17,9 +16,10 @@ namespace server
 namespace handlers
 {
 
+// TODO: Эта сущность будет переработана, сейчас это прототип-набросок.
+
 ItemsHandler::ItemsHandler()
 {
-    LOG_INFO << "ItemsHandler created";
 }
 
 std::map<std::string, std::string> ItemsHandler::extractQueryParams(
@@ -28,10 +28,11 @@ std::map<std::string, std::string> ItemsHandler::extractQueryParams(
 {
     std::map<std::string, std::string> params;
     auto uri = request.relative_uri();
-    auto query = uri.query();
+    auto query = uri.query(); // Получаем строку запроса (часть после '?')
 
     if (!query.empty())
     {
+        // Разбираем query-строку вида "key1=value1&key2=value2"
         auto queryParams = web::uri::split_query(query);
         for (const auto& param : queryParams)
         {
@@ -49,11 +50,11 @@ void ItemsHandler::handleGetItems(
 {
     LOG_INFO << "GET /api/items from user " << userId;
 
-    // Получаем параметры запроса
+    // Получаем параметры пагинации из query-строки
     auto params = extractQueryParams(request);
 
-    int page = 1;
-    int pageSize = 20;
+    int page = 1; // Номер страницы (начиная с 1)
+    int pageSize = 20; // Количество элементов на странице
 
     if (params.find("page") != params.end())
     {
@@ -64,14 +65,15 @@ void ItemsHandler::handleGetItems(
         pageSize = std::stoi(params["pageSize"]);
     }
 
-    // TODO: Здесь должна быть логика получения элементов из БД с учетом прав доступа
+    // TODO: Здесь должна быть логика получения элементов из БД
+    // с учетом прав доступа
 
     web::json::value response;
     response["items"] = web::json::value::array();
 
-    // Пример данных
+    // Пример данных для тестирования (в реальном коде данные приходят из БД)
     int start = (page - 1) * pageSize + 1;
-    int end = std::min(page * pageSize, 100);
+    int end = std::min(page * pageSize, 100); // Всего 100 тестовых элементов
 
     int index = 0;
     for (int i = start; i <= end; ++i)
@@ -82,6 +84,8 @@ void ItemsHandler::handleGetItems(
         item["content"] = web::json::value::string("Content of item " + std::to_string(i));
         response["items"][index++] = item;
     }
+
+    // Метаинформация для пагинации
     response["totalCount"] = web::json::value::number(100);
     response["page"] = web::json::value::number(page);
     response["pageSize"] = web::json::value::number(pageSize);
@@ -150,7 +154,7 @@ void ItemsHandler::handleCreateItem(
                         return;
                     }
 
-                    // Валидация обязательных полей
+                    // Валидация: поле "caption" обязательно для заполнения
                     if (!jsonBody.has_field("caption")
                         || jsonBody.at("caption").as_string().empty())
                     {
@@ -251,7 +255,10 @@ void ItemsHandler::handleUpdateItem(const web::http::http_request& request, cons
     }
 }
 
-void ItemsHandler::handleDeleteItem(const web::http::http_request& request, const std::string& userId)
+void ItemsHandler::handleDeleteItem(
+    const web::http::http_request& request,
+    const std::string& userId
+)
 {
     int64_t itemId = extractItemId(request);
     if (itemId <= 0)
@@ -271,24 +278,24 @@ void ItemsHandler::handleDeleteItem(const web::http::http_request& request, cons
 
 int64_t ItemsHandler::extractItemId(const web::http::http_request& request)
 {
-    // Извлекаем ID из пути
+    // Извлекаем ID из пути, ожидая формат: /api/items/{id}
     std::string path = web::uri::decode(request.relative_uri().path());
-    std::regex pattern(R"(/api/items/(\d+))");
+    std::regex pattern(R"(/api/items/(\d+))"); // Регулярка для поиска числа после /api/items/
     std::smatch matches;
 
     if (std::regex_match(path, matches, pattern) && matches.size() > 1)
     {
         try
         {
-            return std::stoll(matches[1].str());
+            return std::stoll(matches[1].str()); // Конвертируем строку в число
         }
         catch (const std::exception&)
         {
-            return -1;
+            return -1; // Ошибка конвертации
         }
     }
 
-    return -1;
+    return -1; // ID не найден
 }
 
 void ItemsHandler::sendErrorResponse(
@@ -297,6 +304,7 @@ void ItemsHandler::sendErrorResponse(
     const std::string& message
 )
 {
+    // Формируем JSON с информацией об ошибке
     web::json::value error;
     error["code"] = web::json::value::number(code);
     error["message"] = web::json::value::string(message);

@@ -13,7 +13,7 @@ std::atomic<farado::server::Application*> applicationPtr { nullptr };
 
 void signalHandler(int signal)
 {
-    LOG_INFO << "\nReceived signal " << signal;
+    LOG_INFO << "Получен сигнал " << signal;
     if (auto app = applicationPtr.load())
         app->stop();
 }
@@ -87,7 +87,7 @@ int main(int argc, char* argv[])
     std::signal(SIGINT, signalHandler);
     std::signal(SIGTERM, signalHandler);
 
-    LOG_INFO << "Farado Server Starting...";
+    LOG_INFO << "Запуск сервера Farado...";
 
     int result = 0;
     {
@@ -96,6 +96,6 @@ int main(int argc, char* argv[])
         result = application.run();
     }
 
-    LOG_INFO << "Farado Server stopped with code: " << result;
+    LOG_INFO << "Сервер Farado был остановлен. Код: " << result;
     return result;
 }

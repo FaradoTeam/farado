@@ -16,40 +16,43 @@ AuthMiddleware::AuthMiddleware(const std::string& secretKey)
 {
     if (m_secretKey.empty())
     {
-        LOG_ERROR
-            << "Warning: AuthMiddleware initialized with empty secret key";
+        // Пустой секретный ключ — серьезная проблема безопасности!
+        LOG_ERROR << "AuthMiddleware инициализируется пустым секретным ключом";
     }
 }
 
-bool AuthMiddleware::validateRequest(const std::string& authHeader, std::string& userId)
+bool AuthMiddleware::validateRequest(
+    const std::string& authHeader,
+    std::string& userId
+)
 {
     // 1. Проверяем наличие заголовка Authorization
     if (authHeader.empty())
     {
-        LOG_ERROR << "Missing Authorization header";
+        LOG_ERROR << "Отсутствует заголовок авторизации";
         return false;
     }
 
     // 2. Извлекаем Bearer-токен
-    std::string token = extractBearerToken(authHeader);
+    const std::string token = extractBearerToken(authHeader);
     if (token.empty())
     {
-        LOG_ERROR << "Invalid Authorization header format";
+        LOG_ERROR << "Недопустимый формат заголовка авторизации";
         return false;
     }
 
     // 3. Проверяем, не аннулирован ли токен
     if (isTokenInvalidated(token))
     {
-        LOG_ERROR << "Token has been invalidated";
+        LOG_ERROR << "Токен был признан недействительным";
         return false;
     }
 
     // 4. Верифицируем подпись, срок действия и issuer
-    auto jwtToken = verifyToken(token);
+    const auto jwtToken = verifyToken(token);
     if (!jwtToken.has_value())
     {
-        LOG_ERROR << "Invalid or expired token";
+        LOG_ERROR << "Недействительный или просроченный токен";
         return false;
     }
 
@@ -58,21 +61,31 @@ bool AuthMiddleware::validateRequest(const std::string& authHeader, std::string&
     return true;
 }
 
-std::string AuthMiddleware::generateToken(const std::string& userId, int expiresInSeconds)
+std::string AuthMiddleware::generateToken(
+    const std::string& userId,
+    int expiresInSeconds
+)
 {
     const auto now = std::chrono::system_clock::now();
     const auto expiresAt = now + std::chrono::seconds(expiresInSeconds);
 
     LOG_DEBUG
-        << "Generating token for user " << userId
-        << " expires at: " << std::chrono::system_clock::to_time_t(expiresAt);
+        << "Генерация токена для пользователя " << userId
+        << " истекает: " << std::chrono::system_clock::to_time_t(expiresAt);
 
+    // Создаем JWT-токен с необходимыми claims
     return jwt::create()
+        // Указываем тип токена
         .set_type("JWT")
+        // Указываем издателя
         .set_issuer("farado-api")
+        // Пользовательский claim с ID пользователя
         .set_payload_claim("user_id", jwt::claim(userId))
+        // Время выдачи
         .set_issued_at(now)
+        // Время истечения
         .set_expires_at(expiresAt)
+        // Подписываем HMAC-SHA256
         .sign(jwt::algorithm::hs256 { m_secretKey });
 }
 
@@ -80,14 +93,20 @@ std::optional<JWTToken> AuthMiddleware::verifyToken(const std::string& token)
 {
     try
     {
+        // Декодируем токен (без проверки подписи)
         auto decoded = jwt::decode(token);
 
+        // Настраиваем верификатор
         auto verifier = jwt::verify()
+                            // Разрешаем только HS256
                             .allow_algorithm(jwt::algorithm::hs256 { m_secretKey })
+                            // Проверяем issuer
                             .with_issuer("farado-api");
 
+        // Выполняем верификацию (подпись, срок действия, issuer)
         verifier.verify(decoded);
 
+        // Токен валиден — извлекаем информацию
         JWTToken result;
         result.token = token;
         result.userId = decoded.get_payload_claim("user_id").as_string();
@@ -96,36 +115,38 @@ std::optional<JWTToken> AuthMiddleware::verifyToken(const std::string& token)
     }
     catch (const std::exception& e)
     {
-        LOG_ERROR << "Token verification failed: " << e.what();
+        LOG_ERROR << "Не удалось выполнить проверку токена: " << e.what();
     }
-    return std::nullopt;
+    return std::nullopt; // Верификация не удалась
 }
 
 void AuthMiddleware::invalidateToken(const std::string& token)
 {
+    // Сначала проверяем, что токен валиден
     auto jwtToken = verifyToken(token);
     if (!jwtToken.has_value())
     {
-        LOG_ERROR << "Cannot invalidate invalid token";
+        LOG_ERROR << "Невозможно аннулировать недействительный токен";
         return;
     }
 
     LOG_DEBUG
-        << "Token verified, userId: " << jwtToken->userId << ", expires at: "
+        << "Токен проверен, пользователь: " << jwtToken->userId << ", истекает: "
         << std::chrono::system_clock::to_time_t(jwtToken->expiresAt);
 
+    // Добавляем токен в черный список вместе с временем истечения
     {
         std::lock_guard<std::mutex> lock(m_blacklistMutex);
         m_blacklist[token] = jwtToken->expiresAt;
         LOG_DEBUG
-            << "Token added to blacklist, blacklist size: "
+            << "Токен добавлен в черный список, размер черного списка: "
             << m_blacklist.size();
     }
 
-    // Периодическая очистка
-    // TODO : сделать в отдельном потоке
+    // Периодически очищаем черный список от истекших токенов
+    // TODO: сделать фоном в отдельном потоке, а не при invalidateToken
     static int invalidateCount = 0;
-    if (++invalidateCount % 10 == 0)
+    if (++invalidateCount % 10 == 0) // Каждые 10 аннулирований
         cleanBlacklist();
 }
 
@@ -135,29 +156,34 @@ bool AuthMiddleware::isTokenInvalidated(const std::string& token)
 
     auto it = m_blacklist.find(token);
     if (it == m_blacklist.end())
-        return false;
+        return false; // Токен не в черном списке
 
+    // Проверяем, не истек ли уже срок действия токена
     const auto now = std::chrono::system_clock::now();
     if (it->second < now)
     {
+        // Токен истек — удаляем из черного списка
+        // (он больше не представляет угрозы)
         m_blacklist.erase(it);
         return false;
     }
 
-    return true;
+    return true; // Токен в черном списке и еще не истек
 }
 
 std::string AuthMiddleware::extractBearerToken(const std::string& authHeader)
 {
+    // Регулярное выражение для формата "Bearer <token>"
+    // Токен может содержать буквы, цифры, дефис, подчеркивание и точку
     std::regex bearerRegex(R"(^Bearer\s+([a-zA-Z0-9\-_\.]+)$)");
     std::smatch matches;
 
     if (std::regex_match(authHeader, matches, bearerRegex) && matches.size() > 1)
     {
-        return matches[1].str();
+        return matches[1].str(); // Возвращаем извлеченный токен
     }
 
-    return "";
+    return ""; // Неверный формат
 }
 
 void AuthMiddleware::cleanBlacklist()
@@ -165,11 +191,13 @@ void AuthMiddleware::cleanBlacklist()
     const auto now = std::chrono::system_clock::now();
     std::lock_guard<std::mutex> lock(m_blacklistMutex);
 
+    // Удаляем все токены, срок действия которых истек
     for (auto it = m_blacklist.begin(); it != m_blacklist.end();)
     {
         if (it->second < now)
         {
-            LOG_INFO << "Removing expired token from blacklist";
+            LOG_DEBUG
+                << "Удаление токена с истекшим сроком действия";
             it = m_blacklist.erase(it);
         }
         else

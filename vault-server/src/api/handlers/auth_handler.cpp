@@ -1,4 +1,3 @@
-#include <iostream>
 #include <regex>
 #include <string>
 
@@ -21,7 +20,7 @@ AuthHandler::AuthHandler(std::shared_ptr<AuthMiddleware> authMiddleware)
 {
     if (!m_authMiddleware)
     {
-        LOG_ERROR << "Warning: AuthHandler initialized without AuthMiddleware";
+        LOG_WARN << "AuthHandler инициализирован без AuthMiddleware";
     }
 }
 
@@ -29,7 +28,7 @@ void AuthHandler::handleLogin(const web::http::http_request& request)
 {
     try
     {
-        // Извлекаем тело запроса
+        // Асинхронно извлекаем JSON из тела запроса
         request
             .extract_json()
             .then(
@@ -38,10 +37,12 @@ void AuthHandler::handleLogin(const web::http::http_request& request)
                     web::json::value jsonBody;
                     try
                     {
+                        // Получаем результат парсинга JSON
                         jsonBody = task.get();
                     }
                     catch (const std::exception& e)
                     {
+                        // Некорректный JSON в теле запроса
                         web::http::http_response response(
                             web::http::status_codes::BadRequest
                         );
@@ -54,6 +55,7 @@ void AuthHandler::handleLogin(const web::http::http_request& request)
                         return;
                     }
 
+                    // Извлекаем логин и пароль из JSON
                     const std::string login = jsonBody.has_field("login")
                         ? jsonBody.at("login").as_string()
                         : "";
@@ -61,7 +63,7 @@ void AuthHandler::handleLogin(const web::http::http_request& request)
                         ? jsonBody.at("password").as_string()
                         : "";
 
-                    // Валидация входных данных
+                    // Валидация: оба поля обязательны
                     if (login.empty() || password.empty())
                     {
                         web::http::http_response response(
@@ -76,10 +78,11 @@ void AuthHandler::handleLogin(const web::http::http_request& request)
                         return;
                     }
 
-                    // Проверяем учетные данные
-                    std::string userId = validateCredentials(login, password);
+                    // Проверяем учетные данные (в реальном коде — запрос к БД)
+                    const std::string userId = validateCredentials(login, password);
                     if (userId.empty())
                     {
+                        // Неверный логин или пароль
                         web::http::http_response response(
                             web::http::status_codes::Unauthorized
                         );
@@ -92,23 +95,28 @@ void AuthHandler::handleLogin(const web::http::http_request& request)
                         return;
                     }
 
-                    // Генерируем JWT токен
+                    // Генерируем JWT-токен для успешно аутентифицированного пользователя
                     const std::string token = m_authMiddleware->generateToken(userId);
 
-                    // Формируем ответ
+                    // Формируем успешный ответ с токеном
                     web::json::value response;
                     response["access_token"] = web::json::value::string(token);
                     response["token_type"] = web::json::value::string("Bearer");
+                    // TODO : Вынести в настройки
+                    // Время жизни токена в секундах
                     response["expires_in"] = web::json::value::number(3600);
 
                     request.reply(web::http::status_codes::OK, response);
-                    LOG_INFO << "User " << userId << " logged in successfully";
+                    LOG_INFO
+                        << "Пользователь " << userId
+                        << " успешно вошел в систему";
                 }
             )
-            .wait();
+            .wait(); // Дожидаемся завершения асинхронной операции
     }
     catch (const std::exception& e)
     {
+        // Ошибка при извлечении тела запроса
         web::http::http_response response(web::http::status_codes::BadRequest);
         sendErrorResponse(
             response,
@@ -121,33 +129,37 @@ void AuthHandler::handleLogin(const web::http::http_request& request)
 
 void AuthHandler::handleLogout(const web::http::http_request& request)
 {
-    // Извлекаем токен из заголовка
+    // Ищем заголовок Authorization в запросе
     auto authHeader = request.headers().find("Authorization");
     if (authHeader == request.headers().end())
     {
-        LOG_ERROR << "No Authorization header in logout request";
+        LOG_ERROR << "Нет заголовка авторизации в запросе на выход из системы";
         request.reply(web::http::status_codes::Unauthorized);
         return;
     }
 
-    // Извлекаем Bearer токен
+    // Регулярное выражение для извлечения Bearer-токена
+    // Формат: "Bearer <token>", где токен содержит буквы, цифры, дефис,
+    // подчеркивание и точку
     std::regex bearerRegex(R"(^Bearer\s+([a-zA-Z0-9\-_\.]+)$)");
     std::smatch matches;
 
     if (std::regex_match(authHeader->second, matches, bearerRegex) && matches.size() > 1)
     {
         const std::string token = matches[1].str();
-        LOG_INFO << "Logout: invalidating token";
+        // Добавляем токен в черный список
         m_authMiddleware->invalidateToken(token);
         request.reply(web::http::status_codes::NoContent);
     }
     else
     {
-        LOG_ERROR << "Invalid Authorization header format in logout";
+        // Неверный формат заголовка Authorization
+        LOG_ERROR
+            << "Недопустимый формат заголовка авторизации при выходе из системы";
         request.reply(web::http::status_codes::BadRequest);
     }
 
-    LOG_INFO << "User logged out";
+    LOG_INFO << "Пользователь вышел из системы";
 }
 
 void AuthHandler::handleChangePassword(
@@ -181,6 +193,7 @@ void AuthHandler::handleChangePassword(
                         return;
                     }
 
+                    // Извлекаем старый и новый пароли из запроса
                     const std::string oldPassword = jsonBody.has_field("oldPassword")
                         ? jsonBody.at("oldPassword").as_string()
                         : "";
@@ -188,6 +201,7 @@ void AuthHandler::handleChangePassword(
                         ? jsonBody.at("newPassword").as_string()
                         : "";
 
+                    // Проверяем, что оба пароля присутствуют
                     if (oldPassword.empty() || newPassword.empty())
                     {
                         web::http::http_response response(
@@ -202,6 +216,8 @@ void AuthHandler::handleChangePassword(
                         return;
                     }
 
+                    // TODO : Вынести в настройки
+                    // Проверяем минимальную длину нового пароля
                     if (newPassword.length() < 8)
                     {
                         web::http::http_response response(
@@ -217,9 +233,12 @@ void AuthHandler::handleChangePassword(
                     }
 
                     // TODO: Здесь должна быть логика смены пароля в БД
+                    // 1. Проверить, что старый пароль верный
+                    // 2. Обновить пароль на новый (с хешированием)
+                    // 3. Аннулировать все активные токены пользователя
 
                     request.reply(web::http::status_codes::NoContent);
-                    LOG_INFO << "Password changed for user " << userId;
+                    LOG_INFO << "Пароль изменен для пользователя " << userId;
                 }
             )
             .wait();
@@ -243,11 +262,12 @@ std::string AuthHandler::validateCredentials(
 {
     // TODO: Реализовать проверку в БД
     // Временная заглушка для тестирования
+    // здесь должен быть запрос к БД и проверка хеша пароля
     if (login == "admin" && password == "admin123")
     {
-        return "1";
+        return "1"; // Возвращаем идентификатор пользователя
     }
-    return "";
+    return ""; // Неверные учетные данные
 }
 
 void AuthHandler::sendErrorResponse(
@@ -256,6 +276,7 @@ void AuthHandler::sendErrorResponse(
     const std::string& message
 )
 {
+    // Формируем JSON с информацией об ошибке
     web::json::value error;
     error["code"] = web::json::value::number(code);
     error["message"] = web::json::value::string(message);
