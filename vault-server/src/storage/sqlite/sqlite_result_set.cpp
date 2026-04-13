@@ -1,3 +1,4 @@
+#include <cstring>
 #include <mutex>
 #include <shared_mutex>
 #include <stdexcept>
@@ -18,6 +19,7 @@ SqliteResultSet::SqliteResultSet(
     : m_connection(connection)
     , m_stmt(stmt)
 {
+    // Инициализация: запрос ещё не выполнен, строк нет
 }
 
 SqliteResultSet::~SqliteResultSet() = default;
@@ -29,42 +31,28 @@ SqliteResultSet::SqliteResultSet(SqliteResultSet&& other) noexcept
     , m_columnNames(std::move(other.m_columnNames))
     , m_columnIndexCache(std::move(other.m_columnIndexCache))
 {
+    // Обнуляем исходный объект, чтобы он не пытался освободить ресурсы
     other.m_stmt = nullptr;
     other.m_hasRow = false;
 }
 
-void SqliteResultSet::cacheColumnNames() const
-{
-    if (!m_columnNames.empty())
-    {
-        return;
-    }
-
-    int count = columnCount();
-    m_columnNames.reserve(count);
-
-    for (int i = 0; i < count; ++i)
-    {
-        const char* name = sqlite3_column_name(m_stmt, i);
-        m_columnNames.emplace_back(name ? name : "");
-        m_columnIndexCache[m_columnNames.back()] = i;
-    }
-}
-
 bool SqliteResultSet::next()
 {
+    // Блокируем на чтение - несколько потоков могут читать одновременно,
+    // но не должны писать (изменять состояние statement'а)
     std::shared_lock<std::shared_mutex> lock(m_connection.mutex());
 
+    // Перемещаемся на следующую строку результата
     const int rc = sqlite3_step(m_stmt);
     if (rc == SQLITE_ROW)
     {
         m_hasRow = true;
-        return true;
+        return true; // Есть ещё строки
     }
     else if (rc == SQLITE_DONE)
     {
         m_hasRow = false;
-        return false;
+        return false; // Закончились строки
     }
     else
     {
@@ -126,21 +114,24 @@ FieldValue SqliteResultSet::value(int index) const
     switch (type)
     {
     case SQLITE_INTEGER:
+        // Целое число (64-битное)
         return FieldValue(
             static_cast<int64_t>(sqlite3_column_int64(m_stmt, index))
         );
 
     case SQLITE_FLOAT:
+        // Число с плавающей запятой
         return FieldValue(sqlite3_column_double(m_stmt, index));
 
     case SQLITE_TEXT:
     {
+        // Текст (строка)
         if (const unsigned char* text = sqlite3_column_text(m_stmt, index))
         {
             std::string strValue(reinterpret_cast<const char*>(text));
 
-            // Пытаемся распарсить как DateTime, если строка выглядит как дата/время
-            // Формат: "YYYY-MM-DD HH:MM:SS"
+            // Умное преобразование: пытаемся распарсить как DateTime,
+            // если строка выглядит как дата/время в формате "YYYY-MM-DD HH:MM:SS"
             if (strValue.length() >= 19
                 && strValue[4] == '-'
                 && strValue[7] == '-'
@@ -150,25 +141,30 @@ FieldValue SqliteResultSet::value(int index) const
             {
                 try
                 {
+                    // Если успешно распарсилось - возвращаем как DateTime
                     return FieldValue(stringToDateTime(strValue));
                 }
                 catch (...)
                 {
-                    // Если парсинг не удался, возвращаем как строку
+                    // Если парсинг не удался (например, невалидная дата),
+                    // возвращаем как обычную строку
                     return FieldValue(std::move(strValue));
                 }
             }
 
+            // Обычная строка
             return FieldValue(std::move(strValue));
         }
         else
         {
+            // Пустая строка = NULL
             return FieldValue();
         }
     }
 
     case SQLITE_BLOB:
     {
+        // Бинарные данные
         const void* blob = sqlite3_column_blob(m_stmt, index);
         const int size = sqlite3_column_bytes(m_stmt, index);
         if (blob && size > 0)
@@ -177,12 +173,31 @@ FieldValue SqliteResultSet::value(int index) const
             std::memcpy(result.data(), blob, size);
             return FieldValue(std::move(result));
         }
-        return FieldValue();
+        return FieldValue(); // Пустой BLOB = NULL
     }
 
     case SQLITE_NULL:
     default:
+        // NULL значение
         return FieldValue();
+    }
+}
+
+void SqliteResultSet::cacheColumnNames() const
+{
+    if (!m_columnNames.empty())
+    {
+        return; // Уже закэшировано
+    }
+
+    int count = columnCount();
+    m_columnNames.reserve(count);
+
+    for (int i = 0; i < count; ++i)
+    {
+        const char* name = sqlite3_column_name(m_stmt, i);
+        m_columnNames.emplace_back(name ? name : "");
+        m_columnIndexCache[m_columnNames.back()] = i;
     }
 }
 

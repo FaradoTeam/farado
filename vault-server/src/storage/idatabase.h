@@ -9,17 +9,17 @@
 namespace db
 {
 
+class IConnection;
+class IStatement;
+class IResultSet;
+class ITransaction;
+
 /**
  * @brief Главный интерфейс базы данных.
  *
  * Предоставляет методы для инициализации, выполнения запросов,
  * управления транзакциями и получения соединений.
  */
-class IConnection;
-class IStatement;
-class IResultSet;
-class ITransaction;
-
 class IDatabase
 {
 public:

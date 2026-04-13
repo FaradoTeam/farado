@@ -7,24 +7,42 @@ namespace db
 
 class SqliteConnection;
 
-class SqliteTransaction : public ITransaction
+/**
+ * @brief Реализация ITransaction для SQLite.
+ *
+ * @details Управляет транзакциями SQLite.
+ *          Транзакция автоматически начинается в конструкторе
+ *          и должна быть явно завершена commit() или rollback().
+ *
+ * @note В деструкторе выполняется rollback(), если транзакция ещё активна.
+ *       Это гарантирует, что незавершённые транзакции не повиснут,
+ *       но также означает, что нельзя полагаться на автоматический commit.
+ */
+class SqliteTransaction final : public ITransaction
 {
 public:
+    /**
+     * @brief Конструктор. Начинает новую транзакцию.
+     * @param conn Соединение с БД
+     * @throws std::runtime_error Если не удалось начать транзакцию
+     */
     explicit SqliteTransaction(SqliteConnection& conn);
     ~SqliteTransaction() override;
 
+    // Запрещаем копирование и перемещение
     SqliteTransaction(const SqliteTransaction&) = delete;
     SqliteTransaction& operator=(const SqliteTransaction&) = delete;
     SqliteTransaction(SqliteTransaction&&) = delete;
     SqliteTransaction& operator=(SqliteTransaction&&) = delete;
 
+    // Реализация ITransaction
     void commit() override;
     void rollback() override;
     bool isActive() const override;
 
 private:
-    SqliteConnection& m_connection;
-    bool m_active = true;
+    SqliteConnection& m_connection; ///< Ссылка на соединение
+    bool m_active = true; ///< Активна ли транзакция (не завершена)
 };
 
 } // namespace db
