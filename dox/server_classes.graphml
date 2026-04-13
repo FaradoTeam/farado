@@ -13,368 +13,282 @@
   <key attr.name="description" attr.type="string" for="edge" id="d9"/>
   <key for="edge" id="d10" yfiles.type="edgegraphics"/>
   <graph edgedefault="directed" id="G">
-    <data key="d0" xml:space="preserve"/>
+    <data key="d0" xml:space="preserve"><![CDATA[Database Layer Class Diagram]]></data>
     <node id="n0">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="187.5" width="264.8" x="-913.6865242506811" y="506.25"/>
+          <y:Geometry height="113.28541973490428" width="330.9360824742271" x="-555.4680412371135" y="513.3572901325479"/>
           <y:Fill color="#99CCFF" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="74.43994140625" x="95.180029296875" xml:space="preserve" y="3.0">IDatabase<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="74.20002746582031" x="128.36802750420338" xml:space="preserve" y="25.548094749450684">IDatabase<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="interface" use3DEffect="true">
             <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve">void initialize(DatabaseConfig)
-void shutdown()
-
-IConnection* getConnection()
-
-IResultSet* query(sqlString)
-int64_t execute(sqlString)
-
-void transaction(callback)
-...</y:MethodLabel>
+            <y:MethodLabel xml:space="preserve">+ initialize(config: DatabaseConfig): void
++ shutdown(): void
++ connection(): shared_ptr&lt;IConnection&gt;</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <node id="n1">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="208.30000000000007" width="264.8" x="-1345.1999999999998" y="495.84999999999997"/>
+          <y:Geometry height="139.1896907216494" width="412.9431752577319" x="-1196.3988217967599" y="497.9051546391753"/>
           <y:Fill color="#99CCFF" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="90.09326171875" x="87.353369140625" xml:space="preserve" y="3.0">IConnection<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="89.80003356933594" x="161.571570844198" xml:space="preserve" y="25.548094749450684">IConnection<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="interface" use3DEffect="true">
             <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve">void open(connectionString)
-void close()
-bool isOpen()
-
-IStatement prepareStatement(sql)
-int execute(sql)
-
-ITransaction beginTransaction()
-int getLastInsertId()
-string escapeString(value)
-...
-</y:MethodLabel>
+            <y:MethodLabel xml:space="preserve">+ prepareStatement(sql: string): unique_ptr&lt;IStatement&gt;
++ execute(sql: string): int64_t
++ beginTransaction(): unique_ptr&lt;ITransaction&gt;
++ lastInsertId(): int64_t
++ escapeString(value: string): string</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <node id="n2">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="226.69999999999993" width="264.8" x="-1842.4" y="486.6500000000001"/>
+          <y:Geometry height="197.6371134020617" width="396.4253313696613" x="-1908.2126656848307" y="466.18144329896916"/>
           <y:Fill color="#99CCFF" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="82.2666015625" x="91.26669921875" xml:space="preserve" y="3.0">IStatement<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="82.00003051757812" x="157.2126504260416" xml:space="preserve" y="25.548094749450684">IStatement<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="interface" use3DEffect="true">
             <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve">int execute()
-IResultSet executeQuery()
-
-void reset()
-
-void bindNull(name)
-void bindInt64(name, value)
-void bindDouble(name, value)
-void bindString(name, value)
-void bindBlob(name, value)
-void bindDateTime(name, value)
-...</y:MethodLabel>
+            <y:MethodLabel xml:space="preserve">+ execute(): int64_t
++ executeQuery(): unique_ptr&lt;IResultSet&gt;
++ reset(): void
++ bindNull(name: string): void
++ bindInt64(name: string, value: int64_t): void
++ bindDouble(name: string, value: double): void
++ bindString(name: string, value: string): void
++ bindBlob(name: string, value: Blob): void
++ bindDateTime(name: string, value: DateTime): void</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <node id="n3">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="292.29999999999984" width="264.8" x="-2232.4" y="393.85000000000014"/>
+          <y:Geometry height="167.54020618556706" width="281.8191458026504" x="-2330.909572901325" y="481.22989690721647"/>
           <y:Fill color="#99CCFF" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="82.2666015625" x="91.26669921875" xml:space="preserve" y="3.0">IResultSet<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="82.00003051757812" x="99.90955764253613" xml:space="preserve" y="25.548094749450684">IResultSet<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="interface" use3DEffect="true">
             <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve">bool next()
-
-int getColumnCount()
-string getColumnName(index)
-int getColumnIndex(name)
-
-bool isNull(index)
-
-FieldValue getValue(index)
-FieldValue getValue(name)
-
-int getInt64(index)
-double getDouble(index)
-string getString(index)
-vector&lt;uint&gt; getBlob(index)
-time_point getDateTime(index)
-...</y:MethodLabel>
+            <y:MethodLabel xml:space="preserve">+ next(): bool
++ columnCount(): int
++ columnName(index: int): string
++ columnIndex(name: string): int
++ isNull(index: int): bool
++ value(index: int): FieldValue
++ value(name: string): FieldValue</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <node id="n4">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="119.49999999999966" width="170.40000000000038" x="-1585.2000000000003" y="783.1500000000004"/>
+          <y:Geometry height="114.01307805596457" width="169.42777025036776" x="-1434.7138851251839" y="662.9934609720177"/>
           <y:Fill color="#99CCFF" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="97.919921875" x="36.24003906250019" xml:space="preserve" y="3.0">ITransaction<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="97.60003662109375" x="35.913866814637004" xml:space="preserve" y="25.548094749450684">ITransaction<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="interface" use3DEffect="true">
             <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve">void commit()
-void rollback()
-bool isActive()
-...</y:MethodLabel>
+            <y:MethodLabel xml:space="preserve">+ commit(): void
++ rollback(): void
++ isActive(): bool</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <node id="n5">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="103.5" width="460.8" x="-1011.6865242506813" y="266.81418528610357"/>
+          <y:Geometry height="79.08512518409418" width="527.3932253313696" x="-653.6966126656848" y="320.4574374079529"/>
           <y:Fill color="#99CCFF" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="121.39990234375" x="169.700048828125" xml:space="preserve" y="3.0">DatabaseFactory<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="121.00004577636719" x="203.19658977750123" xml:space="preserve" y="3.0">DatabaseFactory<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
           <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
             <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve">IDatabase create(type)
-IDatabase createFromConnectionString(connectionString)
-...</y:MethodLabel>
+            <y:MethodLabel xml:space="preserve">+ create(type: DatabaseType): unique_ptr&lt;IDatabase&gt;
++ createFromConnectionString(connString: string): unique_ptr&lt;IDatabase&gt;</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <node id="n6">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="28.0" width="175.57807084468692" x="-987.7890354223434" y="826.0"/>
-          <y:Fill color="#99CCFF" transparent="false"/>
+          <y:Geometry height="135.65525773195884" width="329.8551988217969" x="-554.9275994108984" y="815.5612842415314"/>
+          <y:Fill color="#CCFFCC" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="144.8798828125" x="15.34909401609346" xml:space="preserve" y="3.0">PostgreSqlDatabase<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="113.20004272460938" x="108.32757804859375" xml:space="preserve" y="3.0">SqliteDatabase<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
           <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
-            <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve"/>
+            <y:AttributeLabel xml:space="preserve">- m_dbPath: string
+- m_initialized: atomic&lt;bool&gt;
+- m_activeConnection: weak_ptr&lt;IConnection&gt;</y:AttributeLabel>
+            <y:MethodLabel xml:space="preserve">+ initialize(config: DatabaseConfig): void
++ shutdown(): void
++ connection(): shared_ptr&lt;IConnection&gt;</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <node id="n7">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="28.0" width="175.57807084468692" x="-987.7890354223434" y="766.0"/>
-          <y:Fill color="#99CCFF" transparent="false"/>
+          <y:Geometry height="116.92335787923389" width="260.0" x="-1480.0" y="842.8788217967602"/>
+          <y:Fill color="#CCFFCC" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="113.5732421875" x="31.00241432859346" xml:space="preserve" y="3.0">SqliteDatabase<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="136.6000518798828" x="61.699974060058594" xml:space="preserve" y="3.0">SqliteTransaction<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
           <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
-            <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve"/>
+            <y:AttributeLabel xml:space="preserve">- m_connection: SqliteConnection&amp;
+- m_active: bool</y:AttributeLabel>
+            <y:MethodLabel xml:space="preserve">+ commit(): void
++ rollback(): void
++ isActive(): bool</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <node id="n8">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="28.0" width="171.52252861035396" x="-1340.561264305177" y="824.0"/>
-          <y:Fill color="#99CCFF" transparent="false"/>
+          <y:Geometry height="146.77782621502206" width="412.51718409425644" x="-1196.2585920471283" y="1017.7746097201771"/>
+          <y:Fill color="#CCFFCC" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="160.533203125" x="5.494662742676979" xml:space="preserve" y="3.0">PostgreSqlConnection<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="128.800048828125" x="141.85856763306572" xml:space="preserve" y="3.0">SqliteConnection<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
           <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
-            <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve"/>
+            <y:AttributeLabel xml:space="preserve">- m_db: sqlite3*
+- m_mutex: shared_mutex</y:AttributeLabel>
+            <y:MethodLabel xml:space="preserve">+ prepareStatement(sql: string): unique_ptr&lt;IStatement&gt;
++ execute(sql: string): int64_t
++ beginTransaction(): unique_ptr&lt;ITransaction&gt;
++ lastInsertId(): int64_t
++ escapeString(value: string): string</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <node id="n9">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="28.0" width="171.52252861035396" x="-1340.561264305177" y="764.0"/>
-          <y:Fill color="#99CCFF" transparent="false"/>
+          <y:Geometry height="148.7334315169369" width="347.31899852724564" x="-1883.6594992636228" y="1003.4078939617086"/>
+          <y:Fill color="#CCFFCC" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="129.2265625" x="21.14798305517698" xml:space="preserve" y="3.0">SqliteConnection<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="121.00004577636719" x="113.15947637543923" xml:space="preserve" y="3.0">SqliteStatement<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
           <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
-            <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve"/>
+            <y:AttributeLabel xml:space="preserve">- m_connection: SqliteConnection&amp;
+- m_stmt: sqlite3_stmt*
+- m_paramIndexCache: unordered_map&lt;string,int&gt;</y:AttributeLabel>
+            <y:MethodLabel xml:space="preserve">+ execute(): int64_t
++ executeQuery(): unique_ptr&lt;IResultSet&gt;
++ reset(): void
++ bind*(name: string, ...): void</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <node id="n10">
-      <data key="d4" xml:space="preserve"/>
       <data key="d6">
         <y:UMLClassNode>
-          <y:Geometry height="28.0" width="171.52252861035396" x="-1885.761264305177" y="828.9000000000003"/>
-          <y:Fill color="#99CCFF" transparent="false"/>
+          <y:Geometry height="189.1169366715758" width="300.02120765832115" x="-2340.0106038291606" y="1103.2161413843892"/>
+          <y:Fill color="#CCFFCC" transparent="false"/>
           <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="152.70654296875" x="9.40799282080198" xml:space="preserve" y="3.0">PostgreSqlStatement<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="18.75501251220703" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="121.00004577636719" x="89.51058094097698" xml:space="preserve" y="3.0">SqliteResultSet<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
           <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
-            <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve"/>
-          </y:UML>
-        </y:UMLClassNode>
-      </data>
-    </node>
-    <node id="n11">
-      <data key="d4" xml:space="preserve"/>
-      <data key="d6">
-        <y:UMLClassNode>
-          <y:Geometry height="28.0" width="171.52252861035396" x="-1885.761264305177" y="768.9000000000003"/>
-          <y:Fill color="#99CCFF" transparent="false"/>
-          <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="121.39990234375" x="25.06131313330198" xml:space="preserve" y="3.0">SqliteStatement<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
-            <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve"/>
-          </y:UML>
-        </y:UMLClassNode>
-      </data>
-    </node>
-    <node id="n12">
-      <data key="d4" xml:space="preserve"/>
-      <data key="d6">
-        <y:UMLClassNode>
-          <y:Geometry height="28.0" width="194.23356512261563" x="-1717.116782561308" y="1008.9000000000002"/>
-          <y:Fill color="#99CCFF" transparent="false"/>
-          <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="168.35986328125" x="12.936850920682815" xml:space="preserve" y="3.0">PostgreSqlTransaction<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
-            <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve"/>
-          </y:UML>
-        </y:UMLClassNode>
-      </data>
-    </node>
-    <node id="n13">
-      <data key="d4" xml:space="preserve"/>
-      <data key="d6">
-        <y:UMLClassNode>
-          <y:Geometry height="28.0" width="194.23356512261563" x="-1717.116782561308" y="948.9000000000002"/>
-          <y:Fill color="#99CCFF" transparent="false"/>
-          <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="137.05322265625" x="28.590171233182815" xml:space="preserve" y="3.0">SqliteTransaction<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
-            <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve"/>
-          </y:UML>
-        </y:UMLClassNode>
-      </data>
-    </node>
-    <node id="n14">
-      <data key="d4" xml:space="preserve"/>
-      <data key="d6">
-        <y:UMLClassNode>
-          <y:Geometry height="28.0" width="171.52252861035396" x="-2245.761264305177" y="796.0"/>
-          <y:Fill color="#99CCFF" transparent="false"/>
-          <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="152.70654296875" x="9.40799282080198" xml:space="preserve" y="3.0">PostgreSqlResultSet<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
-            <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve"/>
-          </y:UML>
-        </y:UMLClassNode>
-      </data>
-    </node>
-    <node id="n15">
-      <data key="d4" xml:space="preserve"/>
-      <data key="d6">
-        <y:UMLClassNode>
-          <y:Geometry height="28.0" width="171.52252861035396" x="-2245.761264305177" y="736.0"/>
-          <y:Fill color="#99CCFF" transparent="false"/>
-          <y:BorderStyle color="#000000" type="line" width="1.0"/>
-          <y:NodeLabel alignment="center" autoSizePolicy="content" fontFamily="Courier" fontSize="13" fontStyle="bold" hasBackgroundColor="false" hasLineColor="false" height="19.1328125" horizontalTextPosition="center" iconTextGap="4" modelName="custom" textColor="#000000" verticalTextPosition="bottom" visible="true" width="121.39990234375" x="25.06131313330198" xml:space="preserve" y="3.0">SqliteResultSet<y:LabelModel><y:SmartNodeLabelModel distance="4.0"/></y:LabelModel><y:ModelParameter><y:SmartNodeLabelModelParameter labelRatioX="0.0" labelRatioY="0.0" nodeRatioX="0.0" nodeRatioY="0.0" offsetX="0.0" offsetY="0.0" upX="0.0" upY="-1.0"/></y:ModelParameter></y:NodeLabel>
-          <y:UML clipContent="true" constraint="" hasDetailsColor="false" omitDetails="false" stereotype="" use3DEffect="true">
-            <y:AttributeLabel xml:space="preserve"/>
-            <y:MethodLabel xml:space="preserve"/>
+            <y:AttributeLabel xml:space="preserve">- m_connection: SqliteConnection&amp;
+- m_stmt: sqlite3_stmt*
+- m_hasRow: bool
+- m_columnNames: vector&lt;string&gt;</y:AttributeLabel>
+            <y:MethodLabel xml:space="preserve">+ next(): bool
++ columnCount(): int
++ columnName(index: int): string
++ columnIndex(name: string): int
++ isNull(index: int): bool
++ value(index: int): FieldValue</y:MethodLabel>
           </y:UML>
         </y:UMLClassNode>
       </data>
     </node>
     <edge id="e0" source="n0" target="n1">
-      <data key="d8" xml:space="preserve"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="7.7970882833786845" tx="0.0" ty="7.7970882833786845"/>
+          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="plain"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="100.966796875" x="-133.8415409339343" xml:space="preserve" y="-20.37717798699464">getConnection()<y:LabelModel><y:SmartEdgeLabelModel autoRotationEnabled="false" defaultAngle="0.0" defaultDistance="10.0"/></y:LabelModel><y:ModelParameter><y:SmartEdgeLabelModelParameter angle="6.283185307179586" distance="11.392833164904541" distanceToCenter="true" position="right" ratio="0.5" segment="0"/></y:ModelParameter><y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
+          <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="11" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="16.8046875" horizontalTextPosition="center" iconTextGap="4" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="73.1904296875" x="-150.58641664197694" xml:space="preserve" y="1.677508167795395">connection()<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
     <edge id="e1" source="n1" target="n2">
-      <data key="d8" xml:space="preserve"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="-59.93654701689377" tx="0.0" ty="-59.93654701689377"/>
+          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="plain"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="123.73046875" x="-178.0627197265626" xml:space="preserve" y="-20.89250713357785">prepareStatement()<y:LabelModel><y:SmartEdgeLabelModel autoRotationEnabled="false" defaultAngle="0.0" defaultDistance="10.0"/></y:LabelModel><y:ModelParameter><y:SmartEdgeLabelModelParameter angle="6.283185307179586" distance="11.908108554184157" distanceToCenter="true" position="right" ratio="0.5000000000000011" segment="-1"/></y:ModelParameter><y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
+          <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="11" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="16.8046875" horizontalTextPosition="center" iconTextGap="4" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="113.7529296875" x="-214.61028997002722" xml:space="preserve" y="1.6498056158173995">prepareStatement()<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
     <edge id="e2" source="n2" target="n3">
-      <data key="d8" xml:space="preserve"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="-47.11427138964575" tx="0.0" ty="12.88572861035425"/>
+          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="plain"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="97.990234375" x="-110.65665882069788" xml:space="preserve" y="-22.12915806560079">executeQuery()<y:LabelModel><y:SmartEdgeLabelModel autoRotationEnabled="false" defaultAngle="0.0" defaultDistance="10.0"/></y:LabelModel><y:ModelParameter><y:SmartEdgeLabelModelParameter angle="6.283185307179586" distance="13.144769488455102" distanceToCenter="true" position="right" ratio="0.4452509608231619" segment="-1"/></y:ModelParameter><y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
+          <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="11" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="16.8046875" horizontalTextPosition="center" iconTextGap="4" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="90.15771484375" x="-115.53704443862762" xml:space="preserve" y="2.0">executeQuery()<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
     <edge id="e3" source="n1" target="n4">
-      <data key="d8" xml:space="preserve"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="60.0" tx="0.0" ty="0.0">
-            <y:Point x="-1500.0" y="660.0"/>
+          <y:Path sx="-60.07276583210614" sy="0.0" tx="0.0" ty="0.0">
+            <y:Point x="-1050.0" y="720.0"/>
           </y:Path>
           <y:LineStyle color="#000000" type="dashed" width="1.0"/>
           <y:Arrows source="none" target="plain"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="117.33203125" x="-153.34537231420063" xml:space="preserve" y="-25.386830005122647">beginTransaction()<y:LabelModel><y:SmartEdgeLabelModel autoRotationEnabled="false" defaultAngle="0.0" defaultDistance="10.0"/></y:LabelModel><y:ModelParameter><y:SmartEdgeLabelModelParameter angle="6.283185307179586" distance="16.402455005122626" distanceToCenter="true" position="right" ratio="0.3404838477188606" segment="0"/></y:ModelParameter><y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
+          <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="11" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="16.8046875" horizontalTextPosition="center" iconTextGap="4" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="107.8876953125" x="-157.02440509365806" xml:space="preserve" y="84.9144287109375">beginTransaction()<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e4" source="n7" target="n0">
-      <data key="d8" xml:space="preserve"/>
+    <edge id="e4" source="n5" target="n0">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">
-            <y:Point x="-781.2865242506812" y="780.0"/>
-          </y:Path>
-          <y:LineStyle color="#000000" type="line" width="1.0"/>
-          <y:Arrows source="none" target="white_delta"/>
+          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
+          <y:LineStyle color="#000000" type="dashed" width="1.0"/>
+          <y:Arrows source="none" target="plain"/>
+          <y:EdgeLabel alignment="center" distance="2.0" fontFamily="Dialog" fontSize="11" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="16.8046875" horizontalTextPosition="center" iconTextGap="4" modelName="six_pos" modelPosition="tail" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="39.1591796875" x="2.0" xml:space="preserve" y="48.49313925292245">create<y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
     <edge id="e5" source="n6" target="n0">
-      <data key="d8" xml:space="preserve"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="none" target="white_delta"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="e6" source="n8" target="n1">
       <data key="d10">
         <y:PolyLineEdge>
           <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0">
-            <y:Point x="-781.2865242506812" y="840.0"/>
+            <y:Point x="-990.0000000000001" y="719.3321266568483"/>
+            <y:Point x="-989.9272341678939" y="719.3321266568483"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="white_delta"/>
@@ -382,133 +296,82 @@ IDatabase createFromConnectionString(connectionString)
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e6" source="n9" target="n1">
-      <data key="d8" xml:space="preserve"/>
+    <edge id="e7" source="n9" target="n2">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="72.79999999999973" ty="0.0">
-            <y:Point x="-1140.0" y="778.0"/>
-          </y:Path>
+          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="white_delta"/>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e7" source="n8" target="n1">
-      <data key="d8" xml:space="preserve"/>
+    <edge id="e8" source="n10" target="n3">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="72.79999999999973" ty="0.0">
-            <y:Point x="-1140.0" y="838.0"/>
-          </y:Path>
+          <y:Path sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="white_delta"/>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e8" source="n11" target="n2">
-      <data key="d8" xml:space="preserve"/>
+    <edge id="e9" source="n7" target="n4">
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="60.0" ty="60.0">
-            <y:Point x="-1650.0" y="782.9000000000003"/>
-          </y:Path>
+          <y:Path sx="0.0" sy="55.96684571401355" tx="0.0" ty="0.0"/>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
           <y:Arrows source="none" target="white_delta"/>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e9" source="n10" target="n2">
+    <edge id="e10" source="n9" target="n8">
       <data key="d8" xml:space="preserve"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="60.0" ty="30.0">
-            <y:Point x="-1650.0" y="842.9000000000003"/>
+          <y:Path sx="0.0" sy="0.0" tx="-179.9999999999999" ty="-13.388913107511144"/>
+          <y:LineStyle color="#000000" type="line" width="1.0"/>
+          <y:Arrows source="diamond" target="none"/>
+          <y:BendStyle smoothed="false"/>
+        </y:PolyLineEdge>
+      </data>
+    </edge>
+    <edge id="e11" source="n7" target="n8">
+      <data key="d8" xml:space="preserve"/>
+      <data key="d10">
+        <y:PolyLineEdge>
+          <y:Path sx="0.0" sy="0.0" tx="-89.99999999999989" ty="5.957434462450237">
+            <y:Point x="-1080.0" y="901.3405007363772"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
-          <y:Arrows source="none" target="white_delta"/>
+          <y:Arrows source="diamond" target="none"/>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e10" source="n13" target="n4">
+    <edge id="e12" source="n6" target="n8">
       <data key="d8" xml:space="preserve"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="30.0" ty="0.0">
-            <y:Point x="-1470.0" y="962.9000000000002"/>
+          <y:Path sx="0.0" sy="0.0" tx="135.79985272456668" ty="-1.1368683772161603E-13">
+            <y:Point x="-390.0" y="1091.1635228276882"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
-          <y:Arrows source="none" target="white_delta"/>
+          <y:Arrows source="white_diamond" target="none"/>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
     </edge>
-    <edge id="e11" source="n12" target="n4">
+    <edge id="e13" source="n10" target="n8">
       <data key="d8" xml:space="preserve"/>
       <data key="d10">
         <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="30.0" ty="0.0">
-            <y:Point x="-1470.0" y="1022.9000000000002"/>
+          <y:Path sx="0.0" sy="0.0" tx="-89.99999999999989" ty="46.611086892488856">
+            <y:Point x="-1080.0" y="1197.774609720177"/>
           </y:Path>
           <y:LineStyle color="#000000" type="line" width="1.0"/>
-          <y:Arrows source="none" target="white_delta"/>
-          <y:BendStyle smoothed="false"/>
-        </y:PolyLineEdge>
-      </data>
-    </edge>
-    <edge id="e12" source="n15" target="n3">
-      <data key="d8" xml:space="preserve"/>
-      <data key="d10">
-        <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="79.59999999999991" ty="0.0">
-            <y:Point x="-2020.4" y="750.0"/>
-          </y:Path>
-          <y:LineStyle color="#000000" type="line" width="1.0"/>
-          <y:Arrows source="none" target="white_delta"/>
-          <y:BendStyle smoothed="false"/>
-        </y:PolyLineEdge>
-      </data>
-    </edge>
-    <edge id="e13" source="n14" target="n3">
-      <data key="d8" xml:space="preserve"/>
-      <data key="d10">
-        <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="0.0" tx="79.59999999999991" ty="0.0">
-            <y:Point x="-2020.4" y="810.0"/>
-          </y:Path>
-          <y:LineStyle color="#000000" type="line" width="1.0"/>
-          <y:Arrows source="none" target="white_delta"/>
-          <y:BendStyle smoothed="false"/>
-        </y:PolyLineEdge>
-      </data>
-    </edge>
-    <edge id="e14" source="n5" target="n0">
-      <data key="d8" xml:space="preserve"/>
-      <data key="d10">
-        <y:PolyLineEdge>
-          <y:Path sx="1.1368683772161603E-13" sy="0.0" tx="0.0" ty="-30.0"/>
-          <y:LineStyle color="#000000" type="dashed" width="1.0"/>
-          <y:Arrows source="none" target="plain"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="42.35546875" x="-51.17775960224367" xml:space="preserve" y="58.95470006492678">create<y:LabelModel><y:SmartEdgeLabelModel autoRotationEnabled="false" defaultAngle="0.0" defaultDistance="10.0"/></y:LabelModel><y:ModelParameter><y:SmartEdgeLabelModelParameter angle="0.0" distance="30.0" distanceToCenter="true" position="right" ratio="0.5" segment="0"/></y:ModelParameter><y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
-          <y:BendStyle smoothed="false"/>
-        </y:PolyLineEdge>
-      </data>
-    </edge>
-    <edge id="e15" source="n0" target="n3">
-      <data key="d8" xml:space="preserve"/>
-      <data key="d10">
-        <y:PolyLineEdge>
-          <y:Path sx="0.0" sy="-60.0" tx="90.0" ty="-90.0">
-            <y:Point x="-1050.0" y="540.0"/>
-            <y:Point x="-1050.0" y="450.0"/>
-          </y:Path>
-          <y:LineStyle color="#000000" type="dashed" width="1.0"/>
-          <y:Arrows source="none" target="plain"/>
-          <y:EdgeLabel alignment="center" configuration="AutoFlippingLabel" distance="2.0" fontFamily="Dialog" fontSize="12" fontStyle="plain" hasBackgroundColor="false" hasLineColor="false" height="17.96875" horizontalTextPosition="center" iconTextGap="4" modelName="custom" preferredPlacement="anywhere" ratio="0.5" textColor="#000000" verticalTextPosition="bottom" visible="true" width="48.00390625" x="-90.0886014562052" xml:space="preserve" y="-20.37720816490446">query()<y:LabelModel><y:SmartEdgeLabelModel autoRotationEnabled="false" defaultAngle="0.0" defaultDistance="10.0"/></y:LabelModel><y:ModelParameter><y:SmartEdgeLabelModelParameter angle="6.283185307179586" distance="11.392833164904541" distanceToCenter="true" position="right" ratio="0.3457794356601445" segment="0"/></y:ModelParameter><y:PreferredPlacementDescriptor angle="0.0" angleOffsetOnRightSide="0" angleReference="absolute" angleRotationOnRightSide="co" distance="-1.0" frozen="true" placement="anywhere" side="anywhere" sideReference="relative_to_edge_flow"/></y:EdgeLabel>
+          <y:Arrows source="diamond" target="none"/>
           <y:BendStyle smoothed="false"/>
         </y:PolyLineEdge>
       </data>
