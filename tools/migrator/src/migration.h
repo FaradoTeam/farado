@@ -1,0 +1,143 @@
+#pragma once
+
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "idatabase.h"
+
+namespace db
+{
+
+/**
+ * @brief Базовый класс для миграции базы данных.
+ *
+ * Каждая миграция представляет собой отдельный класс, наследующий этот интерфейс.
+ * Миграции выполняются последовательно от меньшей версии к большей.
+ */
+class Migration
+{
+public:
+    virtual ~Migration() = default;
+
+    /**
+     * @brief Выполняет миграцию (обновление до текущей версии).
+     * @param connection Соединение с БД
+     */
+    virtual void up(IConnection& connection) = 0;
+
+    /**
+     * @brief Откатывает миграцию (возврат к предыдущей версии).
+     * @param connection Соединение с БД
+     */
+    virtual void down(IConnection& connection) = 0;
+
+    /**
+     * @brief Возвращает номер версии миграции.
+     * @return Номер версии (целое положительное число)
+     */
+    virtual unsigned int version() const = 0;
+
+    /**
+     * @brief Возвращает описание миграции.
+     * @return Описание миграции
+     */
+    virtual std::string description() const = 0;
+};
+
+/**
+ * @brief Управляет миграциями базы данных.
+ *
+ * Отвечает за хранение списка миграций, определение текущей версии БД,
+ * выполнение миграций вперёд и назад.
+ */
+class MigrationManager final
+{
+public:
+    /**
+     * @brief Конструктор.
+     * @param connection Соединение с БД
+     */
+    explicit MigrationManager(std::shared_ptr<IConnection> connection);
+
+    // Запрещаем копирование
+    MigrationManager(const MigrationManager&) = delete;
+    MigrationManager& operator=(const MigrationManager&) = delete;
+
+    /**
+     * @brief Регистрирует миграцию.
+     * @param migration Уникальный указатель на миграцию
+     */
+    void registerMigration(std::unique_ptr<Migration> migration);
+
+    /**
+     * @brief Инициализирует таблицу .schema, если она не существует.
+     * @throws std::runtime_error При ошибке создания таблицы
+     */
+    void initializeSchemaTable();
+
+    /**
+     * @brief Возвращает текущую версию базы данных.
+     * @return Текущая версия (0, если таблица пуста)
+     * @throws std::runtime_error При ошибке чтения
+     */
+    unsigned int getCurrentVersion() const;
+
+    /**
+     * @brief Устанавливает текущую версию базы данных.
+     * @param version Новая версия
+     * @throws std::runtime_error При ошибке записи
+     */
+    void setCurrentVersion(unsigned int version);
+
+    /**
+     * @brief Возвращает список всех доступных миграций.
+     * @return Вектор пар (версия, описание)
+     */
+    std::vector<std::pair<unsigned int, std::string>>
+    getAvailableMigrations() const;
+
+    /**
+     * @brief Выполняет одну миграцию вверх.
+     * @throws std::runtime_error Если нет доступных миграций для обновления
+     */
+    void upgradeOne();
+
+    /**
+     * @brief Выполняет все миграции до последней версии.
+     * @throws std::runtime_error При ошибке выполнения
+     */
+    void upgradeAll();
+
+    /**
+     * @brief Откатывает одну миграцию вниз.
+     * @throws std::runtime_error Если текущая версия 0 или нет миграции для отката
+     */
+    void downgradeOne();
+
+    /**
+     * @brief Возвращает максимальную доступную версию миграции.
+     * @return Максимальная версия
+     */
+    unsigned int getMaxVersion() const;
+
+private:
+    /**
+     * @brief Находит миграцию по номеру версии.
+     * @param version Номер версии
+     * @return Указатель на миграцию или nullptr
+     */
+    Migration* findMigration(unsigned int version);
+
+private:
+    /// Соединение с БД
+    std::shared_ptr<IConnection> m_connection;
+
+    /// Список миграций
+    std::vector<std::unique_ptr<Migration>> m_migrations;
+
+    /// Кэш миграций
+    mutable std::vector<std::pair<unsigned int, std::string>> m_cachedMigrations;
+};
+
+} // namespace db
