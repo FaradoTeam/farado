@@ -16,7 +16,7 @@ MigrationManager::MigrationManager(std::shared_ptr<IConnection> connection)
     }
 }
 
-void MigrationManager::registerMigration(std::unique_ptr<Migration> migration)
+void MigrationManager::registerMigration(std::unique_ptr<IMigration> migration)
 {
     if (!migration)
     {
@@ -36,13 +36,12 @@ void MigrationManager::registerMigration(std::unique_ptr<Migration> migration)
     }
 
     m_migrations.push_back(std::move(migration));
-    m_cachedMigrations.clear(); // Очищаем кэш
 
     // Сортируем миграции по версии
     std::sort(
         m_migrations.begin(),
         m_migrations.end(),
-        [](const std::unique_ptr<Migration>& a, const std::unique_ptr<Migration>& b)
+        [](const std::unique_ptr<IMigration>& a, const std::unique_ptr<IMigration>& b)
         {
             return a->version() < b->version();
         }
@@ -98,7 +97,7 @@ void MigrationManager::initializeSchemaTable()
     m_connection->execute(insertSQL);
 }
 
-unsigned int MigrationManager::getCurrentVersion() const
+unsigned int MigrationManager::currentVersion() const
 {
     try
     {
@@ -140,26 +139,22 @@ void MigrationManager::setCurrentVersion(unsigned int version)
 }
 
 std::vector<std::pair<unsigned int, std::string>>
-MigrationManager::getAvailableMigrations() const
+MigrationManager::availableMigrations() const
 {
-    if (!m_cachedMigrations.empty())
-    {
-        return m_cachedMigrations;
-    }
-
-    m_cachedMigrations.reserve(m_migrations.size());
+    std::vector<std::pair<unsigned int, std::string>> result;
+    result.reserve(m_migrations.size());
     for (const auto& migration : m_migrations)
     {
-        m_cachedMigrations.emplace_back(
+        result.emplace_back(
             migration->version(),
             migration->description()
         );
     }
 
-    return m_cachedMigrations;
+    return result;
 }
 
-Migration* MigrationManager::findMigration(unsigned int version)
+IMigration* MigrationManager::findMigration(unsigned int version)
 {
     for (const auto& migration : m_migrations)
     {
@@ -173,8 +168,8 @@ Migration* MigrationManager::findMigration(unsigned int version)
 
 void MigrationManager::upgradeOne()
 {
-    const unsigned int currentVersion = getCurrentVersion();
-    const unsigned int maxVersion = getMaxVersion();
+    const unsigned int currentVersion = this->currentVersion();
+    const unsigned int maxVersion = this->maxVersion();
 
     if (currentVersion >= maxVersion)
     {
@@ -184,7 +179,7 @@ void MigrationManager::upgradeOne()
     }
 
     const unsigned int targetVersion = currentVersion + 1;
-    Migration* migration = findMigration(targetVersion);
+    IMigration* migration = findMigration(targetVersion);
 
     if (!migration)
     {
@@ -198,7 +193,7 @@ void MigrationManager::upgradeOne()
 
     try
     {
-        migration->up(*m_connection);
+        migration->up(m_connection);
         setCurrentVersion(targetVersion);
         transaction->commit();
     }
@@ -214,8 +209,8 @@ void MigrationManager::upgradeOne()
 
 void MigrationManager::upgradeAll()
 {
-    const unsigned int currentVersion = getCurrentVersion();
-    const unsigned int maxVersion = getMaxVersion();
+    const unsigned int currentVersion = this->currentVersion();
+    const unsigned int maxVersion = this->maxVersion();
 
     if (currentVersion >= maxVersion)
     {
@@ -226,7 +221,7 @@ void MigrationManager::upgradeAll()
 
     for (unsigned int targetVersion = currentVersion + 1; targetVersion <= maxVersion; ++targetVersion)
     {
-        Migration* migration = findMigration(targetVersion);
+        IMigration* migration = findMigration(targetVersion);
         if (!migration)
         {
             throw std::runtime_error(
@@ -239,7 +234,7 @@ void MigrationManager::upgradeAll()
 
         try
         {
-            migration->up(*m_connection);
+            migration->up(m_connection);
             setCurrentVersion(targetVersion);
             transaction->commit();
         }
@@ -255,7 +250,7 @@ void MigrationManager::upgradeAll()
 
 void MigrationManager::downgradeOne()
 {
-    const unsigned int currentVersion = getCurrentVersion();
+    const unsigned int currentVersion = this->currentVersion();
 
     if (currentVersion == 0)
     {
@@ -263,7 +258,7 @@ void MigrationManager::downgradeOne()
     }
 
     const unsigned int targetVersion = currentVersion - 1;
-    Migration* migration = findMigration(currentVersion);
+    IMigration* migration = findMigration(currentVersion);
 
     if (!migration)
     {
@@ -277,7 +272,7 @@ void MigrationManager::downgradeOne()
 
     try
     {
-        migration->down(*m_connection);
+        migration->down(m_connection);
         setCurrentVersion(targetVersion);
         transaction->commit();
     }
@@ -291,7 +286,7 @@ void MigrationManager::downgradeOne()
     }
 }
 
-unsigned int MigrationManager::getMaxVersion() const
+unsigned int MigrationManager::maxVersion() const
 {
     if (m_migrations.empty())
     {

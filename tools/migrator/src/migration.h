@@ -15,22 +15,22 @@ namespace db
  * Каждая миграция представляет собой отдельный класс, наследующий этот интерфейс.
  * Миграции выполняются последовательно от меньшей версии к большей.
  */
-class Migration
+class IMigration
 {
 public:
-    virtual ~Migration() = default;
+    virtual ~IMigration() = default;
 
     /**
      * @brief Выполняет миграцию (обновление до текущей версии).
      * @param connection Соединение с БД
      */
-    virtual void up(IConnection& connection) = 0;
+    virtual void up(std::shared_ptr<IConnection> connection) = 0;
 
     /**
      * @brief Откатывает миграцию (возврат к предыдущей версии).
      * @param connection Соединение с БД
      */
-    virtual void down(IConnection& connection) = 0;
+    virtual void down(std::shared_ptr<IConnection> connection) = 0;
 
     /**
      * @brief Возвращает номер версии миграции.
@@ -68,7 +68,7 @@ public:
      * @brief Регистрирует миграцию.
      * @param migration Уникальный указатель на миграцию
      */
-    void registerMigration(std::unique_ptr<Migration> migration);
+    void registerMigration(std::unique_ptr<IMigration> migration);
 
     /**
      * @brief Инициализирует таблицу .schema, если она не существует.
@@ -81,7 +81,7 @@ public:
      * @return Текущая версия (0, если таблица пуста)
      * @throws std::runtime_error При ошибке чтения
      */
-    unsigned int getCurrentVersion() const;
+    unsigned int currentVersion() const;
 
     /**
      * @brief Устанавливает текущую версию базы данных.
@@ -94,8 +94,7 @@ public:
      * @brief Возвращает список всех доступных миграций.
      * @return Вектор пар (версия, описание)
      */
-    std::vector<std::pair<unsigned int, std::string>>
-    getAvailableMigrations() const;
+    std::vector<std::pair<unsigned int, std::string>> availableMigrations() const;
 
     /**
      * @brief Выполняет одну миграцию вверх.
@@ -119,7 +118,7 @@ public:
      * @brief Возвращает максимальную доступную версию миграции.
      * @return Максимальная версия
      */
-    unsigned int getMaxVersion() const;
+    unsigned int maxVersion() const;
 
 private:
     /**
@@ -127,17 +126,14 @@ private:
      * @param version Номер версии
      * @return Указатель на миграцию или nullptr
      */
-    Migration* findMigration(unsigned int version);
+    IMigration* findMigration(unsigned int version);
 
 private:
     /// Соединение с БД
     std::shared_ptr<IConnection> m_connection;
 
     /// Список миграций
-    std::vector<std::unique_ptr<Migration>> m_migrations;
-
-    /// Кэш миграций
-    mutable std::vector<std::pair<unsigned int, std::string>> m_cachedMigrations;
+    std::vector<std::unique_ptr<IMigration>> m_migrations;
 };
 
 } // namespace db

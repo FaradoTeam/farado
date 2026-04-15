@@ -32,8 +32,8 @@ void registerMigrations(db::MigrationManager& manager)
  */
 void listMigrations(const db::MigrationManager& manager)
 {
-    const auto migrations = manager.getAvailableMigrations();
-    const unsigned int currentVersion = manager.getCurrentVersion();
+    const auto migrations = manager.availableMigrations();
+    const unsigned int currentVersion = manager.currentVersion();
 
     LOG_INFO << "Доступные версии миграции:";
     LOG_INFO << "  Текущая версия: " << currentVersion;
@@ -52,7 +52,7 @@ void listMigrations(const db::MigrationManager& manager)
  */
 void showCurrentVersion(const db::MigrationManager& manager)
 {
-    const unsigned int version = manager.getCurrentVersion();
+    const unsigned int version = manager.currentVersion();
     LOG_INFO << "Текущая версия базы данных: " << version;
 }
 
@@ -174,12 +174,12 @@ int main(int argc, char* argv[])
             manager.upgradeAll();
             LOG_INFO
                 << "База данных успешно обновлена до версии "
-                << manager.getCurrentVersion();
+                << manager.currentVersion();
         }
         else if (variables.count("upgrade"))
         {
-            const unsigned int oldVersion = manager.getCurrentVersion();
-            const unsigned int maxVersion = manager.getMaxVersion();
+            const unsigned int oldVersion = manager.currentVersion();
+            const unsigned int maxVersion = manager.maxVersion();
 
             if (oldVersion >= maxVersion)
             {
@@ -193,11 +193,11 @@ int main(int argc, char* argv[])
             manager.upgradeOne();
             LOG_INFO
                 << "База данных успешно обновлена до версии "
-                << manager.getCurrentVersion();
+                << manager.currentVersion();
         }
         else if (variables.count("downgrade"))
         {
-            const unsigned int oldVersion = manager.getCurrentVersion();
+            const unsigned int oldVersion = manager.currentVersion();
 
             if (oldVersion == 0)
             {
@@ -211,7 +211,7 @@ int main(int argc, char* argv[])
             manager.downgradeOne();
             LOG_INFO
                 << "Версия базы данных успешно понижена до "
-                << manager.getCurrentVersion();
+                << manager.currentVersion();
         }
 
         database->shutdown();

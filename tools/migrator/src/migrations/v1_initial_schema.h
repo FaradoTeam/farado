@@ -10,7 +10,7 @@ namespace migrations
 /**
  * @brief Миграция v1: Создание начальной структуры базы данных.
  */
-class V1_InitialSchema final : public Migration
+class V1_InitialSchema final : public IMigration
 {
 public:
     unsigned int version() const override
@@ -23,10 +23,10 @@ public:
         return "Создаёт первоначальную схему базы данных.";
     }
 
-    void up(IConnection& connection) override
+    void up(std::shared_ptr<IConnection> connection) override
     {
         // Пользователи и команды
-        connection.execute(
+        connection->execute(
             "CREATE TABLE User ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    login TEXT NOT NULL UNIQUE,"
@@ -42,7 +42,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Team ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    caption TEXT NOT NULL,"
@@ -50,7 +50,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Role ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    caption TEXT NOT NULL,"
@@ -58,7 +58,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE UserTeamRole ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    userId INTEGER NOT NULL,"
@@ -71,7 +71,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Rule ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    roleId INTEGER NOT NULL,"
@@ -80,7 +80,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE RuleProject ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    ruleId INTEGER NOT NULL,"
@@ -96,7 +96,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE RuleItemType ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    ruleId INTEGER NOT NULL,"
@@ -109,7 +109,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE RuleState ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    ruleId INTEGER NOT NULL,"
@@ -121,7 +121,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE RoleMenuItem ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    roleId INTEGER NOT NULL,"
@@ -133,7 +133,7 @@ public:
         );
 
         // Проекты и фазы
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Project ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    parentId INTEGER,"
@@ -148,7 +148,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Phase ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    projectId INTEGER NOT NULL,"
@@ -163,7 +163,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE ProjectTeam ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    projectId INTEGER NOT NULL,"
@@ -175,7 +175,7 @@ public:
         );
 
         // Типы элементов и поля
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Workflow ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    caption TEXT NOT NULL,"
@@ -183,7 +183,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE State ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    workflowId INTEGER NOT NULL,"
@@ -197,7 +197,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Edge ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    beginStateId INTEGER NOT NULL,"
@@ -208,7 +208,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE ItemType ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    workflowId INTEGER NOT NULL,"
@@ -220,7 +220,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE FieldType ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    itemTypeId INTEGER NOT NULL,"
@@ -237,7 +237,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE FieldTypePossibleValue ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    fieldTypeId INTEGER NOT NULL,"
@@ -247,7 +247,7 @@ public:
         );
 
         // Элементы
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Item ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    itemTypeId INTEGER NOT NULL,"
@@ -266,7 +266,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE ItemField ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    itemId INTEGER NOT NULL,"
@@ -279,7 +279,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE ItemHistory ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    itemId INTEGER NOT NULL,"
@@ -291,7 +291,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE ItemUserState ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    itemId INTEGER NOT NULL,"
@@ -306,7 +306,7 @@ public:
         );
 
         // Связи между элементами
-        connection.execute(
+        connection->execute(
             "CREATE TABLE LinkType ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    sourceItemTypeId INTEGER NOT NULL,"
@@ -318,7 +318,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE ItemLink ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    linkTypeId INTEGER NOT NULL,"
@@ -332,7 +332,7 @@ public:
         );
 
         // Документы
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Document ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    caption TEXT NOT NULL,"
@@ -349,7 +349,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE ItemDocument ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    itemId INTEGER NOT NULL,"
@@ -361,7 +361,7 @@ public:
         );
 
         // Комментарии
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Comment ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    userId INTEGER NOT NULL,"
@@ -374,7 +374,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE CommentDocument ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    commentId INTEGER NOT NULL,"
@@ -386,7 +386,7 @@ public:
         );
 
         // Доски
-        connection.execute(
+        connection->execute(
             "CREATE TABLE Board ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    workflowId INTEGER NOT NULL,"
@@ -400,7 +400,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE BoardColumn ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    boardId INTEGER NOT NULL,"
@@ -414,7 +414,7 @@ public:
         );
 
         // Рабочее время
-        connection.execute(
+        connection->execute(
             "CREATE TABLE StandardDay ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    weekDayNumber INTEGER NOT NULL CHECK (weekDayNumber BETWEEN 0 AND 6),"
@@ -426,7 +426,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE SpecialDay ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    date INTEGER NOT NULL UNIQUE,"
@@ -437,7 +437,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE UserDay ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    userId INTEGER NOT NULL,"
@@ -453,7 +453,7 @@ public:
         );
 
         // Сообщения и уведомления
-        connection.execute(
+        connection->execute(
             "CREATE TABLE PrivateMessage ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    senderUserId INTEGER NOT NULL,"
@@ -466,7 +466,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE TeamMessage ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    senderUserId INTEGER NOT NULL,"
@@ -478,7 +478,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE UserNotification ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    userId INTEGER NOT NULL,"
@@ -490,7 +490,7 @@ public:
         );
 
         // Действия и задачи
-        connection.execute(
+        connection->execute(
             "CREATE TABLE UserAction ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    userId INTEGER NOT NULL,"
@@ -501,7 +501,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE UserTodo ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    userId INTEGER NOT NULL,"
@@ -512,7 +512,7 @@ public:
             ")"
         );
 
-        connection.execute(
+        connection->execute(
             "CREATE TABLE ItemPlanning ("
             "    id INTEGER PRIMARY KEY AUTOINCREMENT,"
             "    itemId INTEGER NOT NULL,"
@@ -526,100 +526,100 @@ public:
         );
 
         // Индексы
-        connection.execute("CREATE INDEX idx_item_itemTypeId ON Item(itemTypeId)");
-        connection.execute("CREATE INDEX idx_item_parentId ON Item(parentId)");
-        connection.execute("CREATE INDEX idx_item_stateId ON Item(stateId)");
-        connection.execute("CREATE INDEX idx_item_phaseId ON Item(phaseId)");
-        connection.execute("CREATE INDEX idx_item_isDeleted ON Item(isDeleted)");
-        connection.execute("CREATE INDEX idx_itemField_itemId ON ItemField(itemId)");
-        connection.execute("CREATE INDEX idx_itemField_fieldTypeId ON ItemField(fieldTypeId)");
-        connection.execute("CREATE INDEX idx_itemField_searchValue ON ItemField(searchValue)");
-        connection.execute("CREATE INDEX idx_comment_itemId ON Comment(itemId)");
-        connection.execute("CREATE INDEX idx_comment_userId ON Comment(userId)");
-        connection.execute("CREATE INDEX idx_itemHistory_itemId ON ItemHistory(itemId)");
-        connection.execute("CREATE INDEX idx_itemHistory_userId ON ItemHistory(userId)");
-        connection.execute("CREATE INDEX idx_itemHistory_timestamp ON ItemHistory(timestamp)");
-        connection.execute("CREATE INDEX idx_itemUserState_itemId ON ItemUserState(itemId)");
-        connection.execute("CREATE INDEX idx_itemUserState_userId ON ItemUserState(userId)");
-        connection.execute("CREATE INDEX idx_userTeamRole_userId ON UserTeamRole(userId)");
-        connection.execute("CREATE INDEX idx_userTeamRole_teamId ON UserTeamRole(teamId)");
-        connection.execute("CREATE INDEX idx_userTeamRole_roleId ON UserTeamRole(roleId)");
-        connection.execute("CREATE INDEX idx_ruleProject_ruleId ON RuleProject(ruleId)");
-        connection.execute("CREATE INDEX idx_ruleProject_projectId ON RuleProject(projectId)");
-        connection.execute("CREATE INDEX idx_ruleItemType_ruleId ON RuleItemType(ruleId)");
-        connection.execute("CREATE INDEX idx_ruleItemType_itemTypeId ON RuleItemType(itemTypeId)");
-        connection.execute("CREATE INDEX idx_ruleState_ruleId ON RuleState(ruleId)");
-        connection.execute("CREATE INDEX idx_ruleState_stateId ON RuleState(stateId)");
+        connection->execute("CREATE INDEX idx_item_itemTypeId ON Item(itemTypeId)");
+        connection->execute("CREATE INDEX idx_item_parentId ON Item(parentId)");
+        connection->execute("CREATE INDEX idx_item_stateId ON Item(stateId)");
+        connection->execute("CREATE INDEX idx_item_phaseId ON Item(phaseId)");
+        connection->execute("CREATE INDEX idx_item_isDeleted ON Item(isDeleted)");
+        connection->execute("CREATE INDEX idx_itemField_itemId ON ItemField(itemId)");
+        connection->execute("CREATE INDEX idx_itemField_fieldTypeId ON ItemField(fieldTypeId)");
+        connection->execute("CREATE INDEX idx_itemField_searchValue ON ItemField(searchValue)");
+        connection->execute("CREATE INDEX idx_comment_itemId ON Comment(itemId)");
+        connection->execute("CREATE INDEX idx_comment_userId ON Comment(userId)");
+        connection->execute("CREATE INDEX idx_itemHistory_itemId ON ItemHistory(itemId)");
+        connection->execute("CREATE INDEX idx_itemHistory_userId ON ItemHistory(userId)");
+        connection->execute("CREATE INDEX idx_itemHistory_timestamp ON ItemHistory(timestamp)");
+        connection->execute("CREATE INDEX idx_itemUserState_itemId ON ItemUserState(itemId)");
+        connection->execute("CREATE INDEX idx_itemUserState_userId ON ItemUserState(userId)");
+        connection->execute("CREATE INDEX idx_userTeamRole_userId ON UserTeamRole(userId)");
+        connection->execute("CREATE INDEX idx_userTeamRole_teamId ON UserTeamRole(teamId)");
+        connection->execute("CREATE INDEX idx_userTeamRole_roleId ON UserTeamRole(roleId)");
+        connection->execute("CREATE INDEX idx_ruleProject_ruleId ON RuleProject(ruleId)");
+        connection->execute("CREATE INDEX idx_ruleProject_projectId ON RuleProject(projectId)");
+        connection->execute("CREATE INDEX idx_ruleItemType_ruleId ON RuleItemType(ruleId)");
+        connection->execute("CREATE INDEX idx_ruleItemType_itemTypeId ON RuleItemType(itemTypeId)");
+        connection->execute("CREATE INDEX idx_ruleState_ruleId ON RuleState(ruleId)");
+        connection->execute("CREATE INDEX idx_ruleState_stateId ON RuleState(stateId)");
     }
 
-    void down(IConnection& connection) override
+    void down(std::shared_ptr<IConnection> connection) override
     {
         // Удаляем индексы
-        connection.execute("DROP INDEX IF EXISTS idx_ruleState_stateId");
-        connection.execute("DROP INDEX IF EXISTS idx_ruleState_ruleId");
-        connection.execute("DROP INDEX IF EXISTS idx_ruleItemType_itemTypeId");
-        connection.execute("DROP INDEX IF EXISTS idx_ruleItemType_ruleId");
-        connection.execute("DROP INDEX IF EXISTS idx_ruleProject_projectId");
-        connection.execute("DROP INDEX IF EXISTS idx_ruleProject_ruleId");
-        connection.execute("DROP INDEX IF EXISTS idx_userTeamRole_roleId");
-        connection.execute("DROP INDEX IF EXISTS idx_userTeamRole_teamId");
-        connection.execute("DROP INDEX IF EXISTS idx_userTeamRole_userId");
-        connection.execute("DROP INDEX IF EXISTS idx_itemUserState_userId");
-        connection.execute("DROP INDEX IF EXISTS idx_itemUserState_itemId");
-        connection.execute("DROP INDEX IF EXISTS idx_itemHistory_timestamp");
-        connection.execute("DROP INDEX IF EXISTS idx_itemHistory_userId");
-        connection.execute("DROP INDEX IF EXISTS idx_itemHistory_itemId");
-        connection.execute("DROP INDEX IF EXISTS idx_comment_userId");
-        connection.execute("DROP INDEX IF EXISTS idx_comment_itemId");
-        connection.execute("DROP INDEX IF EXISTS idx_itemField_searchValue");
-        connection.execute("DROP INDEX IF EXISTS idx_itemField_fieldTypeId");
-        connection.execute("DROP INDEX IF EXISTS idx_itemField_itemId");
-        connection.execute("DROP INDEX IF EXISTS idx_item_isDeleted");
-        connection.execute("DROP INDEX IF EXISTS idx_item_phaseId");
-        connection.execute("DROP INDEX IF EXISTS idx_item_stateId");
-        connection.execute("DROP INDEX IF EXISTS idx_item_parentId");
-        connection.execute("DROP INDEX IF EXISTS idx_item_itemTypeId");
+        connection->execute("DROP INDEX IF EXISTS idx_ruleState_stateId");
+        connection->execute("DROP INDEX IF EXISTS idx_ruleState_ruleId");
+        connection->execute("DROP INDEX IF EXISTS idx_ruleItemType_itemTypeId");
+        connection->execute("DROP INDEX IF EXISTS idx_ruleItemType_ruleId");
+        connection->execute("DROP INDEX IF EXISTS idx_ruleProject_projectId");
+        connection->execute("DROP INDEX IF EXISTS idx_ruleProject_ruleId");
+        connection->execute("DROP INDEX IF EXISTS idx_userTeamRole_roleId");
+        connection->execute("DROP INDEX IF EXISTS idx_userTeamRole_teamId");
+        connection->execute("DROP INDEX IF EXISTS idx_userTeamRole_userId");
+        connection->execute("DROP INDEX IF EXISTS idx_itemUserState_userId");
+        connection->execute("DROP INDEX IF EXISTS idx_itemUserState_itemId");
+        connection->execute("DROP INDEX IF EXISTS idx_itemHistory_timestamp");
+        connection->execute("DROP INDEX IF EXISTS idx_itemHistory_userId");
+        connection->execute("DROP INDEX IF EXISTS idx_itemHistory_itemId");
+        connection->execute("DROP INDEX IF EXISTS idx_comment_userId");
+        connection->execute("DROP INDEX IF EXISTS idx_comment_itemId");
+        connection->execute("DROP INDEX IF EXISTS idx_itemField_searchValue");
+        connection->execute("DROP INDEX IF EXISTS idx_itemField_fieldTypeId");
+        connection->execute("DROP INDEX IF EXISTS idx_itemField_itemId");
+        connection->execute("DROP INDEX IF EXISTS idx_item_isDeleted");
+        connection->execute("DROP INDEX IF EXISTS idx_item_phaseId");
+        connection->execute("DROP INDEX IF EXISTS idx_item_stateId");
+        connection->execute("DROP INDEX IF EXISTS idx_item_parentId");
+        connection->execute("DROP INDEX IF EXISTS idx_item_itemTypeId");
 
         // Удаляем таблицы в обратном порядке (с учётом внешних ключей)
-        connection.execute("DROP TABLE IF EXISTS ItemPlanning");
-        connection.execute("DROP TABLE IF EXISTS UserTodo");
-        connection.execute("DROP TABLE IF EXISTS UserAction");
-        connection.execute("DROP TABLE IF EXISTS UserNotification");
-        connection.execute("DROP TABLE IF EXISTS TeamMessage");
-        connection.execute("DROP TABLE IF EXISTS PrivateMessage");
-        connection.execute("DROP TABLE IF EXISTS UserDay");
-        connection.execute("DROP TABLE IF EXISTS SpecialDay");
-        connection.execute("DROP TABLE IF EXISTS StandardDay");
-        connection.execute("DROP TABLE IF EXISTS BoardColumn");
-        connection.execute("DROP TABLE IF EXISTS Board");
-        connection.execute("DROP TABLE IF EXISTS CommentDocument");
-        connection.execute("DROP TABLE IF EXISTS Comment");
-        connection.execute("DROP TABLE IF EXISTS ItemDocument");
-        connection.execute("DROP TABLE IF EXISTS Document");
-        connection.execute("DROP TABLE IF EXISTS ItemLink");
-        connection.execute("DROP TABLE IF EXISTS LinkType");
-        connection.execute("DROP TABLE IF EXISTS ItemUserState");
-        connection.execute("DROP TABLE IF EXISTS ItemHistory");
-        connection.execute("DROP TABLE IF EXISTS ItemField");
-        connection.execute("DROP TABLE IF EXISTS Item");
-        connection.execute("DROP TABLE IF EXISTS FieldTypePossibleValue");
-        connection.execute("DROP TABLE IF EXISTS FieldType");
-        connection.execute("DROP TABLE IF EXISTS ItemType");
-        connection.execute("DROP TABLE IF EXISTS Edge");
-        connection.execute("DROP TABLE IF EXISTS State");
-        connection.execute("DROP TABLE IF EXISTS Workflow");
-        connection.execute("DROP TABLE IF EXISTS ProjectTeam");
-        connection.execute("DROP TABLE IF EXISTS Phase");
-        connection.execute("DROP TABLE IF EXISTS Project");
-        connection.execute("DROP TABLE IF EXISTS RoleMenuItem");
-        connection.execute("DROP TABLE IF EXISTS RuleState");
-        connection.execute("DROP TABLE IF EXISTS RuleItemType");
-        connection.execute("DROP TABLE IF EXISTS RuleProject");
-        connection.execute("DROP TABLE IF EXISTS Rule");
-        connection.execute("DROP TABLE IF EXISTS UserTeamRole");
-        connection.execute("DROP TABLE IF EXISTS Role");
-        connection.execute("DROP TABLE IF EXISTS Team");
-        connection.execute("DROP TABLE IF EXISTS User");
+        connection->execute("DROP TABLE IF EXISTS ItemPlanning");
+        connection->execute("DROP TABLE IF EXISTS UserTodo");
+        connection->execute("DROP TABLE IF EXISTS UserAction");
+        connection->execute("DROP TABLE IF EXISTS UserNotification");
+        connection->execute("DROP TABLE IF EXISTS TeamMessage");
+        connection->execute("DROP TABLE IF EXISTS PrivateMessage");
+        connection->execute("DROP TABLE IF EXISTS UserDay");
+        connection->execute("DROP TABLE IF EXISTS SpecialDay");
+        connection->execute("DROP TABLE IF EXISTS StandardDay");
+        connection->execute("DROP TABLE IF EXISTS BoardColumn");
+        connection->execute("DROP TABLE IF EXISTS Board");
+        connection->execute("DROP TABLE IF EXISTS CommentDocument");
+        connection->execute("DROP TABLE IF EXISTS Comment");
+        connection->execute("DROP TABLE IF EXISTS ItemDocument");
+        connection->execute("DROP TABLE IF EXISTS Document");
+        connection->execute("DROP TABLE IF EXISTS ItemLink");
+        connection->execute("DROP TABLE IF EXISTS LinkType");
+        connection->execute("DROP TABLE IF EXISTS ItemUserState");
+        connection->execute("DROP TABLE IF EXISTS ItemHistory");
+        connection->execute("DROP TABLE IF EXISTS ItemField");
+        connection->execute("DROP TABLE IF EXISTS Item");
+        connection->execute("DROP TABLE IF EXISTS FieldTypePossibleValue");
+        connection->execute("DROP TABLE IF EXISTS FieldType");
+        connection->execute("DROP TABLE IF EXISTS ItemType");
+        connection->execute("DROP TABLE IF EXISTS Edge");
+        connection->execute("DROP TABLE IF EXISTS State");
+        connection->execute("DROP TABLE IF EXISTS Workflow");
+        connection->execute("DROP TABLE IF EXISTS ProjectTeam");
+        connection->execute("DROP TABLE IF EXISTS Phase");
+        connection->execute("DROP TABLE IF EXISTS Project");
+        connection->execute("DROP TABLE IF EXISTS RoleMenuItem");
+        connection->execute("DROP TABLE IF EXISTS RuleState");
+        connection->execute("DROP TABLE IF EXISTS RuleItemType");
+        connection->execute("DROP TABLE IF EXISTS RuleProject");
+        connection->execute("DROP TABLE IF EXISTS Rule");
+        connection->execute("DROP TABLE IF EXISTS UserTeamRole");
+        connection->execute("DROP TABLE IF EXISTS Role");
+        connection->execute("DROP TABLE IF EXISTS Team");
+        connection->execute("DROP TABLE IF EXISTS User");
     }
 };
 
