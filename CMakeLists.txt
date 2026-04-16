@@ -23,6 +23,10 @@ option(FORCE_REGENERATE_DTO "Force regeneration of DTO even if files exist" OFF)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES
+    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan_provider.cmake
+)
+
 project(farado)
 
 set(CMAKE_CXX_STANDARD 23)
