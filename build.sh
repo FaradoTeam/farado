@@ -1,20 +1,15 @@
 #!/bin/sh
 
-mkdir -p build && cd build
+mkdir -p build
 
-# Сделать один раз при необходимости:
-# conan profile detect --force
-
-conan install ../conanfile.py \
-    --build=missing \
-    -s compiler.libcxx=libstdc++11 \
-    -of=conan/
-
-cmake .. \
+# Configure
+CC=gcc-14 CXX=g++-14 cmake -B build \
     -DENABLE_TESTING=ON \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake
+    -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES=cmake/conan_provider.cmake
 
-make -j$(($(nproc) - 1))
+# Build
+cmake --build build -j$(($(nproc) - 1))
 
-ctest --output-on-failure
+# Test
+ctest --test-dir build --output-on-failure
