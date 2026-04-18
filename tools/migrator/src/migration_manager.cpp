@@ -1,8 +1,7 @@
 #include <algorithm>
 #include <stdexcept>
 
-#include "idatabase.h"
-#include "migration.h"
+#include "migration_manager.h"
 
 namespace db
 {

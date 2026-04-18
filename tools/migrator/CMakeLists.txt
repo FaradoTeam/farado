@@ -26,7 +26,7 @@ set(STORAGE_SOURCES
 
 set(TOOL_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/migration.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/migration_manager.cpp
 )
 
 add_executable(${PROJECT_NAME}

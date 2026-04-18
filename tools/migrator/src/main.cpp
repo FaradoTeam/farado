@@ -8,8 +8,8 @@
 
 #include "database_factory.h"
 
-#include "migration.h"
-#include "migrations/v1_initial_schema.h"
+#include "migration_manager.h"
+#include "migrations_sqlite/v1_initial_schema.h"
 
 namespace po = boost::program_options;
 
