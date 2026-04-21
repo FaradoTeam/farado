@@ -1,9 +1,5 @@
 project(kabanClient)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS ON)
-
 set(CMAKE_AUTOMOC ON)   # Включаем Meta-Object Compiler для сигналов/слотов
 set(CMAKE_AUTORCC ON)   # Включаем автоматическую компиляцию .qrc ресурсов
 
@@ -37,3 +33,7 @@ target_link_libraries(${PROJECT_NAME}
 # 6. Для статической сборки: импортируем все необходимые QML плагины
 qt_import_qml_plugins(${PROJECT_NAME})
 
+set_target_properties(
+    ${PROJECT_NAME} PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+)

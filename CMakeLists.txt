@@ -3,9 +3,8 @@ cmake_minimum_required(VERSION 3.15.7)
 # Опции сборки проекта
 # ---------------------------------------------------------------------------- #
 option(BUILD_VAULT_SERVER "Build Farado Vault Server" ON)
-option(BUILD_VAULT_Client "Build Client" ON)
-option(BUILD_TOOLS "Build tools" ON)
-option(BUILD_ALL "Build all" OFF)
+option(BUILD_CLIENT "Build Client" ON)
+option(BUILD_MIGRATOR "Build database migration tool" ON)
 # ---------------------------------------------------------------------------- #
 
 # Опции сборки тестов
@@ -33,20 +32,21 @@ project(farado)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS ON)
 
-if(BUILD_VAULT_SERVER OR BUILD_ALL)
+if(BUILD_VAULT_SERVER)
     add_subdirectory(vault-server)
 endif()
 
-if(BUILD_CLIENT OR BUILD_ALL)
+if(BUILD_CLIENT)
     add_subdirectory(client)
 endif()
 
-if(BUILD_TOOLS OR BUILD_ALL)
-    add_subdirectory(tools)
+if(BUILD_MIGRATOR)
+    add_subdirectory(tools/migrator)
 endif()
 
-if(ENABLE_TESTING OR BUILD_ALL)
+if(ENABLE_TESTING)
     enable_testing()
     add_subdirectory(tests)
 endif()

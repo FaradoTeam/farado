@@ -1,9 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 project(migrator)
 
-set(CMAKE_CXX_STANDARD 23)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 find_package(Boost REQUIRED COMPONENTS program_options)
 find_package(SQLite3 REQUIRED)
 
