@@ -9,10 +9,9 @@ find_package(jwt-cpp REQUIRED)
 
 set(SERVER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/rest_server.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/middleware/auth_middleware.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/middleware/impl/auth_middleware.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/handlers/auth_handler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/handlers/items_handler.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/logic/auth_service.cpp
 )
 
 set(COMMON_SOURCES
