@@ -120,6 +120,38 @@ std::optional<dto::User> SqliteUserRepository::findById(int64_t id)
     }
 }
 
+std::string SqliteUserRepository::getPasswordHash(int64_t userId)
+{
+    if (userId <= 0)
+    {
+        LOG_WARN << "getPasswordHash: invalid userId " << userId;
+        return "";
+    }
+
+    try
+    {
+        auto conn = m_database->connection();
+        auto stmt = conn->prepareStatement(
+            "SELECT passwordHash FROM User WHERE id = :id"
+        );
+
+        stmt->bindInt64("id", userId);
+        auto rs = stmt->executeQuery();
+
+        if (rs->next() && !rs->isNull("passwordHash"))
+        {
+            return rs->valueString("passwordHash");
+        }
+
+        return "";
+    }
+    catch (const std::exception& e)
+    {
+        LOG_ERROR << "getPasswordHash failed: " << e.what();
+        return "";
+    }
+}
+
 bool SqliteUserRepository::updatePassword(int64_t userId, const std::string& passwordHash)
 {
     if (userId <= 0 || passwordHash.empty())

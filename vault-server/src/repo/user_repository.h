@@ -35,6 +35,13 @@ public:
     virtual std::optional<dto::User> findById(int64_t id) = 0;
 
     /**
+     * @brief Получает хеш пароля пользователя по ID.
+     * @param userId Идентификатор пользователя
+     * @return Хеш пароля или пустая строка, если не найден
+     */
+    virtual std::string getPasswordHash(int64_t userId) = 0;
+
+    /**
      * @brief Обновляет пароль пользователя.
      * @param userId Идентификатор пользователя
      * @param passwordHash Хеш нового пароля
