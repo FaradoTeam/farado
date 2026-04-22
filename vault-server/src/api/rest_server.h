@@ -12,10 +12,15 @@
 #include <cpprest/http_listener.h>
 #include <cpprest/json.h>
 
-#include "middleware/auth_middleware.h"
+#include "api/middleware/auth_middleware.h"
 
 namespace server
 {
+
+namespace services
+{
+class AuthService;
+}
 
 /**
  * @brief Основной класс REST-сервера.
@@ -73,6 +78,8 @@ public:
      * @param middleware Указатель на объект AuthMiddleware
      */
     void setAuthMiddleware(std::shared_ptr<AuthMiddleware> middleware);
+
+    void setAuthService(std::shared_ptr<services::AuthService> authService);
 
 private:
     /**
@@ -177,6 +184,8 @@ private:
 
     /// Список зарегистрированных маршрутов
     std::vector<RouteInfo> m_routes;
+
+    std::shared_ptr<services::AuthService> m_authService;
 };
 
 } // namespace server

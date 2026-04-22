@@ -6,7 +6,9 @@
 #include <cpprest/http_msg.h>
 #include <cpprest/json.h>
 
-#include "../middleware/auth_middleware.h"
+#include "api/middleware/auth_middleware.h"
+
+#include "logic/auth_service.h"
 
 namespace server
 {
@@ -24,9 +26,13 @@ class AuthHandler final
 public:
     /**
      * @brief Конструктор обработчика аутентификации.
-     * @param authMiddleware Указатель на middleware для работы с JWT-токенами
+     * @param authService Сервис аутентификации
+     * @param authMiddleware Middleware для работы с JWT-токенами
      */
-    explicit AuthHandler(std::shared_ptr<AuthMiddleware> authMiddleware);
+    explicit AuthHandler(
+        std::shared_ptr<services::AuthService> authService,
+        std::shared_ptr<AuthMiddleware> authMiddleware
+    );
 
     /**
      * @brief Обрабатывает запрос на вход пользователя.
@@ -63,18 +69,6 @@ public:
 
 private:
     /**
-     * @brief Проверяет учетные данные пользователя.
-     *
-     * @param login Логин пользователя
-     * @param password Пароль пользователя
-     * @return Идентификатор пользователя при успехе, пустая строка при ошибке
-     */
-    std::string validateCredentials(
-        const std::string& login,
-        const std::string& password
-    );
-
-    /**
      * @brief Отправляет ошибку в формате JSON.
      *
      * @param response HTTP-ответ для модификации
@@ -88,7 +82,7 @@ private:
     );
 
 private:
-    /// Middleware для работы с JWT
+    std::shared_ptr<services::AuthService> m_authService;
     std::shared_ptr<AuthMiddleware> m_authMiddleware;
 };
 
