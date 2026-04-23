@@ -39,7 +39,7 @@ public:
      * @param userId Идентификатор пользователя
      * @return Хеш пароля или пустая строка, если не найден
      */
-    virtual std::string getPasswordHash(int64_t userId) = 0;
+    virtual std::string passwordHash(int64_t userId) = 0;
 
     /**
      * @brief Обновляет пароль пользователя.

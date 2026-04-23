@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE(test_update_password_success)
     BOOST_CHECK(result);
 
     // Проверяем через прямой запрос к БД
-    auto conn = m_repository->getConnection();
+    auto conn = m_repository->connection();
     auto stmt = conn->prepareStatement(
         "SELECT passwordHash FROM User WHERE id = :id"
     );

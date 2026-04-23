@@ -56,7 +56,7 @@ std::optional<dto::User> SqliteUserRepository::findByLogin(const std::string& lo
 {
     if (login.empty())
     {
-        LOG_WARN << "findByLogin: empty login provided";
+        LOG_WARN << "findByLogin: указан пустой логин";
         return std::nullopt;
     }
 
@@ -81,7 +81,7 @@ std::optional<dto::User> SqliteUserRepository::findByLogin(const std::string& lo
     }
     catch (const std::exception& e)
     {
-        LOG_ERROR << "findByLogin failed: " << e.what();
+        LOG_ERROR << "Не удалось выполнить поиск логина: " << e.what();
         throw;
     }
 }
@@ -90,7 +90,7 @@ std::optional<dto::User> SqliteUserRepository::findById(int64_t id)
 {
     if (id <= 0)
     {
-        LOG_WARN << "findById: invalid id " << id;
+        LOG_WARN << "findById: неверный идентификатор " << id;
         return std::nullopt;
     }
 
@@ -115,16 +115,16 @@ std::optional<dto::User> SqliteUserRepository::findById(int64_t id)
     }
     catch (const std::exception& e)
     {
-        LOG_ERROR << "findById failed: " << e.what();
+        LOG_ERROR << "Ошибка поиска пользователя по id: " << e.what();
         throw;
     }
 }
 
-std::string SqliteUserRepository::getPasswordHash(int64_t userId)
+std::string SqliteUserRepository::passwordHash(int64_t userId)
 {
     if (userId <= 0)
     {
-        LOG_WARN << "getPasswordHash: invalid userId " << userId;
+        LOG_WARN << "getPasswordHash: неверный userId " << userId;
         return "";
     }
 
@@ -147,7 +147,7 @@ std::string SqliteUserRepository::getPasswordHash(int64_t userId)
     }
     catch (const std::exception& e)
     {
-        LOG_ERROR << "getPasswordHash failed: " << e.what();
+        LOG_ERROR << "Не удалось получить hash пароля: " << e.what();
         return "";
     }
 }
@@ -156,7 +156,7 @@ bool SqliteUserRepository::updatePassword(int64_t userId, const std::string& pas
 {
     if (userId <= 0 || passwordHash.empty())
     {
-        LOG_WARN << "updatePassword: invalid parameters";
+        LOG_WARN << "updatePassword: недопустимые параметры";
         return false;
     }
 
@@ -175,7 +175,7 @@ bool SqliteUserRepository::updatePassword(int64_t userId, const std::string& pas
     }
     catch (const std::exception& e)
     {
-        LOG_ERROR << "updatePassword failed: " << e.what();
+        LOG_ERROR << "Ошибка обновления пароля: " << e.what();
         return false;
     }
 }
@@ -184,7 +184,7 @@ bool SqliteUserRepository::updateNeedChangePassword(int64_t userId, bool needCha
 {
     if (userId <= 0)
     {
-        LOG_WARN << "updateNeedChangePassword: invalid userId " << userId;
+        LOG_WARN << "updateNeedChangePassword: неверный userId " << userId;
         return false;
     }
 
@@ -203,7 +203,9 @@ bool SqliteUserRepository::updateNeedChangePassword(int64_t userId, bool needCha
     }
     catch (const std::exception& e)
     {
-        LOG_ERROR << "updateNeedChangePassword failed: " << e.what();
+        LOG_ERROR
+            << "Ошибка обновления флага принудительной смены пароля: "
+            << e.what();
         return false;
     }
 }
@@ -213,7 +215,7 @@ int64_t SqliteUserRepository::create(const dto::User& user, const std::string& p
     // Проверка обязательных полей с учётом optional
     if (!user.login.has_value() || user.login->empty() || !user.email.has_value() || user.email->empty() || passwordHash.empty())
     {
-        LOG_WARN << "create: required fields missing";
+        LOG_WARN << "Создание пользователя: отсутствуют обязательные поля";
         return 0;
     }
 
@@ -256,7 +258,7 @@ int64_t SqliteUserRepository::create(const dto::User& user, const std::string& p
     }
     catch (const std::exception& e)
     {
-        LOG_ERROR << "create failed: " << e.what();
+        LOG_ERROR << "Ошибка создания пользователя: " << e.what();
         throw; // Пробрасываем исключение для обработки в вызывающем коде
     }
 }
@@ -280,12 +282,14 @@ bool SqliteUserRepository::existsByLogin(const std::string& login)
     }
     catch (const std::exception& e)
     {
-        LOG_ERROR << "existsByLogin failed: " << e.what();
+        LOG_ERROR
+            << "Ошибка проверки существования пользователя по логину: "
+            << e.what();
         return false;
     }
 }
 
-std::shared_ptr<db::IConnection> SqliteUserRepository::getConnection() const
+std::shared_ptr<db::IConnection> SqliteUserRepository::connection() const
 {
     return m_database->connection();
 }

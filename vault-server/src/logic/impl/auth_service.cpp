@@ -202,7 +202,7 @@ bool AuthService::verifyPassword(int64_t userId, const std::string& password)
 
 std::string AuthService::passwordHash(int64_t userId)
 {
-    return m_userRepo->getPasswordHash(userId);
+    return m_userRepo->passwordHash(userId);
 }
 
 std::string AuthService::hashPassword(const std::string& password)

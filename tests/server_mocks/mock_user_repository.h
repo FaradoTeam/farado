@@ -26,7 +26,7 @@ public:
         m_findByIdResult = std::move(user);
     }
 
-    void setGetPasswordHashResult(const std::string& hash)
+    void setPasswordHashResult(const std::string& hash)
     {
         m_passwordHashResult = hash;
     }
@@ -66,10 +66,10 @@ public:
         return m_findByIdResult;
     }
 
-    std::string getPasswordHash(int64_t userId) override
+    std::string passwordHash(int64_t userId) override
     {
-        m_lastGetPasswordHashUserId = userId;
-        m_getPasswordHashCallCount++;
+        m_lastPasswordHashUserId = userId;
+        m_passwordHashCallCount++;
         return m_passwordHashResult;
     }
 
@@ -107,7 +107,7 @@ public:
     // Методы для проверки
     int getFindByLoginCallCount() const { return m_findByLoginCallCount; }
     int getFindByIdCallCount() const { return m_findByIdCallCount; }
-    int getGetPasswordHashCallCount() const { return m_getPasswordHashCallCount; }
+    int getPasswordHashCallCount() const { return m_passwordHashCallCount; }
     int getUpdatePasswordCallCount() const { return m_updatePasswordCallCount; }
 
     const std::string& getLastFindByLogin() const { return m_lastFindByLogin; }
@@ -117,7 +117,7 @@ public:
     {
         m_findByLoginCallCount = 0;
         m_findByIdCallCount = 0;
-        m_getPasswordHashCallCount = 0;
+        m_passwordHashCallCount = 0;
         m_updatePasswordCallCount = 0;
         m_updateNeedChangeCallCount = 0;
         m_createCallCount = 0;
@@ -135,7 +135,7 @@ private:
 
     int m_findByLoginCallCount = 0;
     int m_findByIdCallCount = 0;
-    int m_getPasswordHashCallCount = 0;
+    int m_passwordHashCallCount = 0;
     int m_updatePasswordCallCount = 0;
     int m_updateNeedChangeCallCount = 0;
     int m_createCallCount = 0;
@@ -143,7 +143,7 @@ private:
 
     std::string m_lastFindByLogin;
     int64_t m_lastFindById = 0;
-    int64_t m_lastGetPasswordHashUserId = 0;
+    int64_t m_lastPasswordHashUserId = 0;
     int64_t m_lastUpdatePasswordUserId = 0;
     std::string m_lastUpdatePasswordHash;
     int64_t m_lastUpdateNeedChangeUserId = 0;
