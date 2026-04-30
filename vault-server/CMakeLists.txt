@@ -7,6 +7,7 @@ find_package(OpenSSL REQUIRED)
 find_package(cpprestsdk REQUIRED)
 find_package(jwt-cpp REQUIRED)
 find_package(SQLite3 REQUIRED)
+find_package(ICU REQUIRED)
 
 set(SERVER_SOURCES
     # Application
@@ -96,6 +97,7 @@ target_link_libraries(
     cpprestsdk::cpprest
     jwt-cpp::jwt-cpp
     SQLite::SQLite3
+    icu::icu
 )
 
 target_include_directories(
