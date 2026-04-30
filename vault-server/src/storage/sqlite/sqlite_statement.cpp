@@ -66,14 +66,7 @@ std::unique_ptr<IResultSet> SqliteStatement::executeQuery()
 void SqliteStatement::reset()
 {
     SqliteConnection::ExclusiveLock lock(m_connection);
-
-    // Сбрасываем запрос в состояние "готов к выполнению"
-    int rc = sqlite3_reset(m_stmt);
-    checkError(rc, "Reset statement");
-
-    // Очищаем все привязки параметров
-    rc = sqlite3_clear_bindings(m_stmt);
-    checkError(rc, "Clear bindings");
+    unsafeReset();
 }
 
 void SqliteStatement::bindNull(const std::string& name)
