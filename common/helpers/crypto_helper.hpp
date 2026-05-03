@@ -18,7 +18,7 @@ namespace crypto
  * контекста с помощью умного указателя с пользовательским удалителем.
  * Гарантирует безопасное управление памятью при работе с EVP API.
  */
-class EvpContext
+class EvpContext final
 {
 public:
     EvpContext()

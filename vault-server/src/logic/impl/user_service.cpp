@@ -59,17 +59,19 @@ std::optional<dto::User> UserService::createUser(
     if (m_userRepo->existsByLogin(*user.login))
     {
         LOG_WARN
-            << "createUser: пользователь с логином '" << *user.login << "' уже существует";
+            << "createUser: пользователь с логином '" << *user.login
+            << "' уже существует";
         return std::nullopt;
     }
 
     const std::string hashedPassword = crypto::sha256(password);
     const int64_t newId = m_userRepo->create(user, hashedPassword);
-    if (newId > 0)
+    if (newId <= 0)
     {
-        return m_userRepo->findById(newId);
+        return std::nullopt;
     }
-    return std::nullopt;
+
+    return m_userRepo->findById(newId);
 }
 
 std::optional<dto::User> UserService::updateUser(const dto::User& user)
