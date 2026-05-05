@@ -17,12 +17,14 @@ class AuthMiddleware;
 namespace services
 {
 class AuthService;
-class IUserService;
+class IPhaseService;
 class IProjectService;
+class IUserService;
 }
 
 namespace repositories
 {
+class IPhaseRepository;
 class IProjectRepository;
 class IUserRepository;
 }
@@ -50,12 +52,14 @@ private:
 
     std::shared_ptr<db::IDatabase> m_database;
 
+    std::shared_ptr<repositories::IPhaseRepository> m_phaseRepository;
     std::shared_ptr<repositories::IProjectRepository> m_projectRepository;
     std::shared_ptr<repositories::IUserRepository> m_userRepository;
 
     std::shared_ptr<AuthMiddleware> m_authMiddleware;
 
     std::shared_ptr<services::AuthService> m_authService;
+    std::shared_ptr<services::IPhaseService> m_phaseService;
     std::shared_ptr<services::IProjectService> m_projectService;
     std::shared_ptr<services::IUserService> m_userService;
 

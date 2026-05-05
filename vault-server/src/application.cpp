@@ -11,9 +11,11 @@
 #include "api/rest_server.h"
 
 #include "logic/impl/auth_service.h"
+#include "logic/impl/phase_service.h"
 #include "logic/impl/project_service.h"
 #include "logic/impl/user_service.h"
 
+#include "repo/sqlite/sqlite_phase_repository.h"
 #include "repo/sqlite/sqlite_project_repository.h"
 #include "repo/sqlite/sqlite_user_repository.h"
 
@@ -58,6 +60,9 @@ bool Application::initialize()
     m_userRepository = std::make_shared<repositories::SqliteUserRepository>(m_database);
     m_userService = std::make_shared<services::UserService>(m_userRepository);
 
+    m_phaseRepository = std::make_shared<repositories::SqlitePhaseRepository>(m_database);
+    m_phaseService = std::make_shared<services::PhaseService>(m_phaseRepository);
+
     m_projectRepository = std::make_shared<repositories::SqliteProjectRepository>(m_database);
     m_projectService = std::make_shared<services::ProjectService>(m_projectRepository);
 
@@ -81,8 +86,9 @@ bool Application::initialize()
 
     m_restServer->setAuthMiddleware(m_authMiddleware);
     m_restServer->setAuthService(m_authService);
-    m_restServer->setUserService(m_userService);
+    m_restServer->setPhaseService(m_phaseService);
     m_restServer->setProjectService(m_projectService);
+    m_restServer->setUserService(m_userService);
 
     if (!m_restServer->initialize())
     {

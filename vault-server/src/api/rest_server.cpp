@@ -9,6 +9,7 @@
 
 #include "api/handlers/auth_handler.h"
 #include "api/handlers/items_handler.h"
+#include "api/handlers/phases_handler.h"
 #include "api/handlers/projects_handler.h"
 #include "api/handlers/users_handler.h"
 
@@ -106,6 +107,11 @@ void RestServer::setAuthService(std::shared_ptr<services::IAuthService> authServ
     m_authService = authService;
 }
 
+void RestServer::setPhaseService(std::shared_ptr<services::IPhaseService> phaseService)
+{
+    m_phaseService = phaseService;
+}
+
 void RestServer::setProjectService(std::shared_ptr<services::IProjectService> projectService)
 {
     m_projectService = projectService;
@@ -120,8 +126,9 @@ void RestServer::registerRoutes()
 {
     if (!m_authService
         || !m_authMiddleware
-        || !m_userService
-        || !m_projectService)
+        || !m_phaseService
+        || !m_projectService
+        || !m_userService)
     {
         LOG_ERROR
             << "Ошибка создания обработчиков для REST-сервера! "
@@ -135,6 +142,7 @@ void RestServer::registerRoutes()
         m_authService,
         m_authMiddleware
     );
+    auto phasesHandler = std::make_shared<handlers::PhasesHandler>(m_phaseService);
     auto projectsHandler = std::make_shared<handlers::ProjectsHandler>(m_projectService);
     auto usersHandler = std::make_shared<handlers::UsersHandler>(m_userService);
 
@@ -309,6 +317,73 @@ void RestServer::registerRoutes()
         [usersHandler](auto& req, auto& userId)
         {
             usersHandler->handleDeleteUser(req, userId);
+        }
+    );
+
+    // ----- Маршруты фаз -----
+
+    // GET /api/phases - список фаз
+    addRoute(
+        web::http::methods::GET,
+        "/api/phases",
+        [phasesHandler](
+            const web::http::http_request& request,
+            const std::string& userId
+        )
+        {
+            phasesHandler->handleGetPhases(request, userId);
+        }
+    );
+
+    // POST /api/phases - создание фазы
+    addRoute(
+        web::http::methods::POST,
+        "/api/phases",
+        [phasesHandler](
+            const web::http::http_request& request,
+            const std::string& userId
+        )
+        {
+            phasesHandler->handleCreatePhase(request, userId);
+        }
+    );
+
+    // GET /api/phases/{id} - получение фазы
+    addRoute(
+        web::http::methods::GET,
+        R"(/api/phases/(\d+))",
+        [phasesHandler](
+            const web::http::http_request& request,
+            const std::string& userId
+        )
+        {
+            phasesHandler->handleGetPhase(request, userId);
+        }
+    );
+
+    // PUT /api/phases/{id} - обновление фазы
+    addRoute(
+        web::http::methods::PUT,
+        R"(/api/phases/(\d+))",
+        [phasesHandler](
+            const web::http::http_request& request,
+            const std::string& userId
+        )
+        {
+            phasesHandler->handleUpdatePhase(request, userId);
+        }
+    );
+
+    // DELETE /api/phases/{id} - архивация фазы
+    addRoute(
+        web::http::methods::DEL,
+        R"(/api/phases/(\d+))",
+        [phasesHandler](
+            const web::http::http_request& request,
+            const std::string& userId
+        )
+        {
+            phasesHandler->handleDeletePhase(request, userId);
         }
     );
 

@@ -19,13 +19,16 @@ set(SERVER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/api/middleware/impl/auth_middleware.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/api/handlers/items_handler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/api/handlers/auth_handler.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/api/handlers/phases_handler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/api/handlers/projects_handler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/api/handlers/users_handler.cpp
     # Logic Layer
     ${CMAKE_CURRENT_SOURCE_DIR}/src/logic/impl/auth_service.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/logic/impl/phase_service.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/logic/impl/project_service.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/logic/impl/user_service.cpp
     # Repo Layer
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/repo/sqlite/sqlite_phase_repository.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/repo/sqlite/sqlite_project_repository.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/repo/sqlite/sqlite_user_repository.cpp
     # Storage Layer
