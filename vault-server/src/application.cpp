@@ -4,15 +4,17 @@
 
 #include "common/log/log.h"
 
-#include "config.h"
 #include "application.h"
+#include "config.h"
 
 #include "api/middleware/impl/auth_middleware.h"
 #include "api/rest_server.h"
 
 #include "logic/impl/auth_service.h"
+#include "logic/impl/project_service.h"
 #include "logic/impl/user_service.h"
 
+#include "repo/sqlite/sqlite_project_repository.h"
 #include "repo/sqlite/sqlite_user_repository.h"
 
 #include "storage/database_factory.h"
@@ -52,9 +54,12 @@ bool Application::initialize()
         return false;
     }
 
-    // 2. Создаем репозиторий пользователей
+    // 2. Создаем репозитории и сервисы
     m_userRepository = std::make_shared<repositories::SqliteUserRepository>(m_database);
     m_userService = std::make_shared<services::UserService>(m_userRepository);
+
+    m_projectRepository = std::make_shared<repositories::SqliteProjectRepository>(m_database);
+    m_projectService = std::make_shared<services::ProjectService>(m_projectRepository);
 
     // 3. Создаем middleware для аутентификации
     // TODO: Вынести секретный ключ в конфиг
@@ -77,6 +82,7 @@ bool Application::initialize()
     m_restServer->setAuthMiddleware(m_authMiddleware);
     m_restServer->setAuthService(m_authService);
     m_restServer->setUserService(m_userService);
+    m_restServer->setProjectService(m_projectService);
 
     if (!m_restServer->initialize())
     {

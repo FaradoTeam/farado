@@ -9,9 +9,11 @@
 
 #include "api/handlers/auth_handler.h"
 #include "api/handlers/items_handler.h"
+#include "api/handlers/projects_handler.h"
 #include "api/handlers/users_handler.h"
 
 #include "logic/iauth_service.h"
+#include "logic/iproject_service.h"
 #include "logic/iuser_service.h"
 
 #include "rest_server.h"
@@ -104,6 +106,11 @@ void RestServer::setAuthService(std::shared_ptr<services::IAuthService> authServ
     m_authService = authService;
 }
 
+void RestServer::setProjectService(std::shared_ptr<services::IProjectService> projectService)
+{
+    m_projectService = projectService;
+}
+
 void RestServer::setUserService(std::shared_ptr<services::IUserService> userService)
 {
     m_userService = userService;
@@ -113,7 +120,8 @@ void RestServer::registerRoutes()
 {
     if (!m_authService
         || !m_authMiddleware
-        || !m_userService)
+        || !m_userService
+        || !m_projectService)
     {
         LOG_ERROR
             << "Ошибка создания обработчиков для REST-сервера! "
@@ -127,6 +135,7 @@ void RestServer::registerRoutes()
         m_authService,
         m_authMiddleware
     );
+    auto projectsHandler = std::make_shared<handlers::ProjectsHandler>(m_projectService);
     auto usersHandler = std::make_shared<handlers::UsersHandler>(m_userService);
 
     // Публичные маршруты
@@ -300,6 +309,71 @@ void RestServer::registerRoutes()
         [usersHandler](auto& req, auto& userId)
         {
             usersHandler->handleDeleteUser(req, userId);
+        }
+    );
+
+    // ----- Маршруты проектов -----
+
+    // Получение списка проектов
+    addRoute(
+        web::http::methods::GET,
+        "/api/projects",
+        [projectsHandler](
+            const web::http::http_request& request,
+            const std::string& userId
+        )
+        {
+            projectsHandler->handleGetProjects(request, userId);
+        }
+    );
+
+    // Создание нового проекта
+    addRoute(
+        web::http::methods::POST,
+        "/api/projects",
+        [projectsHandler](
+            const web::http::http_request& request,
+            const std::string& userId
+        )
+        {
+            projectsHandler->handleCreateProject(request, userId);
+        }
+    );
+
+    // Получение, обновление и удаление (архивация) конкретного проекта
+    addRoute(
+        web::http::methods::GET,
+        R"(/api/projects/(\d+))",
+        [projectsHandler](
+            const web::http::http_request& request,
+            const std::string& userId
+        )
+        {
+            projectsHandler->handleGetProject(request, userId);
+        }
+    );
+
+    addRoute(
+        web::http::methods::PUT,
+        R"(/api/projects/(\d+))",
+        [projectsHandler](
+            const web::http::http_request& request,
+            const std::string& userId
+        )
+        {
+            projectsHandler->handleUpdateProject(request, userId);
+        }
+    );
+
+    addRoute(
+        web::http::methods::DEL,
+        R"(/api/projects/(\d+))",
+        [projectsHandler](
+            const web::http::http_request& request,
+            const std::string& userId
+        )
+        {
+            projectsHandler->handleDeleteProject(request, userId);
         }
     );
 
