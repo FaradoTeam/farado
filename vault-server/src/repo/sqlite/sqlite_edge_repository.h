@@ -39,12 +39,6 @@ public:
     std::shared_ptr<db::IConnection> connection() const;
 
 private:
-    /**
-     * @brief Преобразует строку результата в объект Edge.
-     */
-    static dto::Edge mapRowToEdge(db::IResultSet& rs);
-
-private:
     std::shared_ptr<db::IDatabase> m_database;
 };
 

@@ -8,12 +8,13 @@
 
 #include "sqlite_state_repository.h"
 
-namespace server
-{
-namespace repositories
+namespace
 {
 
-dto::State SqliteStateRepository::mapRowToState(db::IResultSet& rs)
+/**
+ * @brief Преобразует строку результата в объект State.
+ */
+dto::State mapRowToState(db::IResultSet& rs)
 {
     dto::State state;
     state.id = rs.valueInt64("id");
@@ -30,6 +31,13 @@ dto::State SqliteStateRepository::mapRowToState(db::IResultSet& rs)
 
     return state;
 }
+
+} // namespace
+
+namespace server
+{
+namespace repositories
+{
 
 SqliteStateRepository::SqliteStateRepository(std::shared_ptr<db::IDatabase> database)
     : m_database(std::move(database))

@@ -38,12 +38,6 @@ public:
     std::shared_ptr<db::IConnection> connection() const;
 
 private:
-    /**
-     * @brief Преобразует строку результата в объект State.
-     */
-    static dto::State mapRowToState(db::IResultSet& rs);
-
-private:
     std::shared_ptr<db::IDatabase> m_database;
 };
 

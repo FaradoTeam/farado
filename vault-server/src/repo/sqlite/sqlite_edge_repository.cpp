@@ -1,17 +1,20 @@
 #include <stdexcept>
 
+#include <boost/algorithm/string.hpp>
+
 #include "common/log/log.h"
 
 #include "storage/idatabase.h"
 
 #include "sqlite_edge_repository.h"
 
-namespace server
-{
-namespace repositories
+namespace
 {
 
-dto::Edge SqliteEdgeRepository::mapRowToEdge(db::IResultSet& rs)
+/**
+ * @brief Преобразует строку результата в объект Edge.
+ */
+dto::Edge mapRowToEdge(db::IResultSet& rs)
 {
     dto::Edge edge;
     edge.id = rs.valueInt64("id");
@@ -20,6 +23,13 @@ dto::Edge SqliteEdgeRepository::mapRowToEdge(db::IResultSet& rs)
 
     return edge;
 }
+
+} // namespace
+
+namespace server
+{
+namespace repositories
+{
 
 SqliteEdgeRepository::SqliteEdgeRepository(std::shared_ptr<db::IDatabase> database)
     : m_database(std::move(database))
