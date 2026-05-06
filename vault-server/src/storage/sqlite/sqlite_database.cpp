@@ -67,6 +67,7 @@ std::shared_ptr<IConnection> SqliteDatabase::connection()
 
     // Создаём новое соединение
     auto result = std::make_shared<SqliteConnection>(m_dbPath);
+    result->execute("PRAGMA foreign_keys=ON");
     result->execute("PRAGMA journal_mode=WAL");
     result->execute("PRAGMA busy_timeout=5000");
     m_activeConnection = result;
