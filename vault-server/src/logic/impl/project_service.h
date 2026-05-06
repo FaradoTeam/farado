@@ -16,13 +16,8 @@ namespace services
 class ProjectService final : public IProjectService
 {
 public:
-    /**
-     * @brief Конструктор.
-     * @param projectRepo Репозиторий для работы с данными проектов.
-     */
     explicit ProjectService(std::shared_ptr<repositories::IProjectRepository> projectRepo);
 
-    // Реализация интерфейса IProjectService
     ProjectsPage projects(
         int page,
         int pageSize,
@@ -37,7 +32,6 @@ public:
     bool restoreProject(int64_t id) override;
 
 private:
-    /// Репозиторий проектов (абстрактный интерфейс).
     std::shared_ptr<repositories::IProjectRepository> m_projectRepo;
 };
 

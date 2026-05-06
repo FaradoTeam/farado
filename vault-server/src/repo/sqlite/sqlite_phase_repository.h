@@ -24,11 +24,6 @@ public:
     explicit SqlitePhaseRepository(std::shared_ptr<db::IDatabase> database);
     ~SqlitePhaseRepository() override = default;
 
-    SqlitePhaseRepository(const SqlitePhaseRepository&) = delete;
-    SqlitePhaseRepository& operator=(const SqlitePhaseRepository&) = delete;
-    SqlitePhaseRepository(SqlitePhaseRepository&&) = delete;
-    SqlitePhaseRepository& operator=(SqlitePhaseRepository&&) = delete;
-
     std::pair<std::vector<dto::Phase>, int64_t> findAll(
         int page,
         int pageSize,

@@ -25,11 +25,6 @@ public:
     explicit SqliteProjectRepository(std::shared_ptr<db::IDatabase> database);
     ~SqliteProjectRepository() override = default;
 
-    SqliteProjectRepository(const SqliteProjectRepository&) = delete;
-    SqliteProjectRepository& operator=(const SqliteProjectRepository&) = delete;
-    SqliteProjectRepository(SqliteProjectRepository&&) = delete;
-    SqliteProjectRepository& operator=(SqliteProjectRepository&&) = delete;
-
     std::pair<std::vector<dto::Project>, int64_t> findAll(
         int page,
         int pageSize,

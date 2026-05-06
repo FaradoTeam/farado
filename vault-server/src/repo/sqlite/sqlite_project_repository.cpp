@@ -71,7 +71,6 @@ std::pair<std::vector<dto::Project>, int64_t> SqliteProjectRepository::findAll(
 
         // 1. Получаем общее количество
         auto countStmt = conn->prepareStatement(countSql + " " + whereClause);
-        int paramIdx = 0;
 
         if (parentId.has_value() && parentId.value() != 0)
             countStmt->bindInt64("parentId", parentId.value());

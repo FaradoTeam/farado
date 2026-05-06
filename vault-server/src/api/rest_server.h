@@ -148,6 +148,39 @@ private:
         bool isPublic = false
     );
 
+    inline void addRouteGet(
+        const std::string& path,
+        RouteHandler handler,
+        bool isPublic = false
+    )
+    {
+        addRoute(web::http::methods::GET, path, handler, isPublic);
+    }
+    inline void addRoutePost(
+        const std::string& path,
+        RouteHandler handler,
+        bool isPublic = false
+    )
+    {
+        addRoute(web::http::methods::POST, path, handler, isPublic);
+    }
+    inline void addRoutePut(
+        const std::string& path,
+        RouteHandler handler,
+        bool isPublic = false
+    )
+    {
+        addRoute(web::http::methods::PUT, path, handler, isPublic);
+    }
+    inline void addRouteDel(
+        const std::string& path,
+        RouteHandler handler,
+        bool isPublic = false
+    )
+    {
+        addRoute(web::http::methods::DEL, path, handler, isPublic);
+    }
+
     /**
      * @brief Находит маршрут, соответствующий запросу.
      *
