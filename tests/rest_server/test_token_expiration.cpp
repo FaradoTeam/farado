@@ -10,6 +10,8 @@
 
 #include "tests/server_mocks/mock_auth_middleware.h"
 #include "tests/server_mocks/mock_auth_service.h"
+#include "tests/server_mocks/mock_phase_service.h"
+#include "tests/server_mocks/mock_project_service.h"
 #include "tests/server_mocks/mock_user_service.h"
 
 using namespace web;
@@ -38,6 +40,8 @@ struct TokenExpirationFixture
 
         // Создаём моки для сервисов
         m_mockAuthService = std::make_shared<MockAuthService>();
+        m_mockPhaseService = std::make_shared<MockPhaseService>();
+        m_mockProjectService = std::make_shared<MockProjectService>();
         m_mockUserService = std::make_shared<MockUserService>();
 
         // Настраиваем UserService с тестовыми данными
@@ -47,6 +51,8 @@ struct TokenExpirationFixture
         m_server = std::make_shared<RestServer>(TEST_HOST, TEST_PORT);
         m_server->setAuthMiddleware(m_authMiddleware);
         m_server->setAuthService(m_mockAuthService);
+        m_server->setPhaseService(m_mockPhaseService);
+        m_server->setProjectService(m_mockProjectService);
         m_server->setUserService(m_mockUserService);
 
         BOOST_REQUIRE(m_server->initialize());
@@ -112,6 +118,8 @@ struct TokenExpirationFixture
     std::shared_ptr<RestServer> m_server;
     std::shared_ptr<AuthMiddleware> m_authMiddleware;
     std::shared_ptr<MockAuthService> m_mockAuthService;
+    std::shared_ptr<MockPhaseService> m_mockPhaseService;
+    std::shared_ptr<MockProjectService> m_mockProjectService;
     std::shared_ptr<MockUserService> m_mockUserService;
 };
 
