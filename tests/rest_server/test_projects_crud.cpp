@@ -9,6 +9,7 @@
 
 #include "tests/server_mocks/mock_auth_middleware.h"
 #include "tests/server_mocks/mock_auth_service.h"
+#include "tests/server_mocks/mock_phase_service.h"
 #include "tests/server_mocks/mock_project_service.h"
 #include "tests/server_mocks/mock_user_service.h"
 
@@ -26,8 +27,9 @@ struct ProjectsTestFixture
     {
         mockAuthMiddleware = std::make_shared<MockAuthMiddleware>();
         mockAuthService = std::make_shared<MockAuthService>();
-        mockUserService = std::make_shared<MockUserService>();
+        mockPhaseService = std::make_shared<MockPhaseService>();
         mockProjectService = std::make_shared<MockProjectService>();
+        mockUserService = std::make_shared<MockUserService>();
 
         mockAuthMiddleware->setValidateRequestResult(true, "test_user_123");
 
@@ -37,8 +39,9 @@ struct ProjectsTestFixture
         server = std::make_unique<RestServer>("127.0.0.1", 18084);
         server->setAuthMiddleware(mockAuthMiddleware);
         server->setAuthService(mockAuthService);
-        server->setUserService(mockUserService);
+        server->setPhaseService(mockPhaseService);
         server->setProjectService(mockProjectService);
+        server->setUserService(mockUserService);
 
         BOOST_REQUIRE(server->initialize());
 
@@ -160,8 +163,9 @@ struct ProjectsTestFixture
     std::unique_ptr<RestServer> server;
     std::shared_ptr<MockAuthMiddleware> mockAuthMiddleware;
     std::shared_ptr<MockAuthService> mockAuthService;
-    std::shared_ptr<MockUserService> mockUserService;
+    std::shared_ptr<MockPhaseService> mockPhaseService;
     std::shared_ptr<MockProjectService> mockProjectService;
+    std::shared_ptr<MockUserService> mockUserService;
     std::thread serverThread;
 };
 
@@ -280,13 +284,16 @@ BOOST_AUTO_TEST_CASE(test_create_project_success)
 
 BOOST_AUTO_TEST_CASE(test_create_project_missing_required_fields)
 {
+    // Настраиваем мок-сервис на возврат ошибки
+    mockProjectService->setCreateProjectResult(std::nullopt);
+
     web::json::value body;
     body[U("description")] = web::json::value::string(U("Проект без названия"));
 
     auto response = makePostRequest("/api/projects", body).get();
 
     BOOST_CHECK_EQUAL(response.status_code(), status_codes::BadRequest);
-    BOOST_CHECK_EQUAL(mockProjectService->createProjectCallCount(), 0);
+    BOOST_CHECK_EQUAL(mockProjectService->createProjectCallCount(), 1);
 }
 
 // ============================================================
