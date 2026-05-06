@@ -9,7 +9,10 @@
 
 #include "api/handlers/auth_handler.h"
 #include "api/handlers/items_handler.h"
+#include "api/handlers/edges_handler.h"
 #include "api/handlers/users_handler.h"
+#include "api/handlers/states_handler.h"
+#include "api/handlers/workflows_handler.h"
 
 #include "logic/iauth_service.h"
 #include "logic/iuser_service.h"
@@ -104,9 +107,24 @@ void RestServer::setAuthService(std::shared_ptr<services::IAuthService> authServ
     m_authService = authService;
 }
 
+void RestServer::setEdgeService(std::shared_ptr<services::IEdgeService> edgeService)
+{
+    m_edgeService = edgeService;
+}
+
 void RestServer::setUserService(std::shared_ptr<services::IUserService> userService)
 {
     m_userService = userService;
+}
+
+void RestServer::setStateService(std::shared_ptr<services::IStateService> stateService)
+{
+    m_stateService = stateService;
+}
+
+void RestServer::setWorkflowService(std::shared_ptr<services::IWorkflowService> workflowService)
+{
+    m_workflowService = workflowService;
 }
 
 void RestServer::registerRoutes()
@@ -128,6 +146,10 @@ void RestServer::registerRoutes()
         m_authMiddleware
     );
     auto usersHandler = std::make_shared<handlers::UsersHandler>(m_userService);
+
+    auto workflowsHandler = std::make_shared<handlers::WorkflowsHandler>(m_workflowService);
+    auto statesHandler = std::make_shared<handlers::StatesHandler>(m_stateService);
+    auto edgesHandler = std::make_shared<handlers::EdgesHandler>(m_edgeService);
 
     // Публичные маршруты
     addRoute(
@@ -302,6 +324,87 @@ void RestServer::registerRoutes()
             usersHandler->handleDeleteUser(req, userId);
         }
     );
+
+    // Рабочие процессы (Workflows)
+
+    addRoute(web::http::methods::GET, "/api/workflows",
+        [workflowsHandler](auto& req, auto& userId) {
+            workflowsHandler->handleGetWorkflows(req, userId);
+        });
+
+    addRoute(web::http::methods::POST, "/api/workflows",
+        [workflowsHandler](auto& req, auto& userId) {
+            workflowsHandler->handleCreateWorkflow(req, userId);
+        });
+
+    addRoute(web::http::methods::GET, R"(/api/workflows/(\d+))",
+        [workflowsHandler](auto& req, auto& userId) {
+            workflowsHandler->handleGetWorkflow(req, userId);
+        });
+
+    addRoute(web::http::methods::PUT, R"(/api/workflows/(\d+))",
+        [workflowsHandler](auto& req, auto& userId) {
+            workflowsHandler->handleUpdateWorkflow(req, userId);
+        });
+
+    addRoute(web::http::methods::DEL, R"(/api/workflows/(\d+))",
+        [workflowsHandler](auto& req, auto& userId) {
+            workflowsHandler->handleDeleteWorkflow(req, userId);
+        });
+
+    // Состояния (States)
+
+    addRoute(web::http::methods::GET, "/api/states",
+        [statesHandler](auto& req, auto& userId) {
+            statesHandler->handleGetStates(req, userId);
+        });
+
+    addRoute(web::http::methods::POST, "/api/states",
+        [statesHandler](auto& req, auto& userId) {
+            statesHandler->handleCreateState(req, userId);
+        });
+
+    addRoute(web::http::methods::GET, R"(/api/states/(\d+))",
+        [statesHandler](auto& req, auto& userId) {
+            statesHandler->handleGetState(req, userId);
+        });
+
+    addRoute(web::http::methods::PUT, R"(/api/states/(\d+))",
+        [statesHandler](auto& req, auto& userId) {
+            statesHandler->handleUpdateState(req, userId);
+        });
+
+    addRoute(web::http::methods::DEL, R"(/api/states/(\d+))",
+        [statesHandler](auto& req, auto& userId) {
+            statesHandler->handleDeleteState(req, userId);
+        });
+
+    // Переходы (Edges)
+    addRoute(web::http::methods::GET, "/api/edges",
+        [edgesHandler](auto& req, auto& userId) {
+            edgesHandler->handleGetEdges(req, userId);
+        });
+
+    addRoute(web::http::methods::POST, "/api/edges",
+        [edgesHandler](auto& req, auto& userId) {
+            edgesHandler->handleCreateEdge(req, userId);
+        });
+
+    addRoute(web::http::methods::GET, R"(/api/edges/(\d+))",
+        [edgesHandler](auto& req, auto& userId) {
+            edgesHandler->handleGetEdge(req, userId);
+        });
+
+    addRoute(web::http::methods::DEL, R"(/api/edges/(\d+))",
+        [edgesHandler](auto& req, auto& userId) {
+            edgesHandler->handleDeleteEdge(req, userId);
+        });
+
+    // Специальный маршрут: получение всех переходов для workflow
+    addRoute(web::http::methods::GET, R"(/api/workflows/(\d+)/edges)",
+        [edgesHandler](auto& req, auto& userId) {
+            edgesHandler->handleGetWorkflowEdges(req, userId);
+        });
 
     LOG_DEBUG
         << "Успешно зарегистрированные маршруты, всего: " << m_routes.size();
