@@ -57,25 +57,25 @@ bool Application::initialize()
     }
 
     // 2. Создаем репозитории и сервисы
-    m_userRepository = std::make_shared<repositories::SqliteUserRepository>(m_database);
-    m_userService = std::make_shared<services::UserService>(m_userRepository);
+    auto userRepository = std::make_shared<repositories::SqliteUserRepository>(m_database);
+    auto userService = std::make_shared<services::UserService>(userRepository);
 
-    m_phaseRepository = std::make_shared<repositories::SqlitePhaseRepository>(m_database);
-    m_phaseService = std::make_shared<services::PhaseService>(m_phaseRepository);
+    auto phaseRepository = std::make_shared<repositories::SqlitePhaseRepository>(m_database);
+    auto phaseService = std::make_shared<services::PhaseService>(phaseRepository);
 
-    m_projectRepository = std::make_shared<repositories::SqliteProjectRepository>(m_database);
-    m_projectService = std::make_shared<services::ProjectService>(m_projectRepository);
+    auto projectRepository = std::make_shared<repositories::SqliteProjectRepository>(m_database);
+    auto projectService = std::make_shared<services::ProjectService>(projectRepository);
 
     // 3. Создаем middleware для аутентификации
     // TODO: Вынести секретный ключ в конфиг
-    m_authMiddleware = std::make_shared<AuthMiddleware>(
+    auto authMiddleware = std::make_shared<AuthMiddleware>(
         "your-very-long-secret-key-that-is-at-least-32-bytes-long!"
     );
 
     // 4. Создаем сервис аутентификации
-    m_authService = std::make_shared<services::AuthService>(
-        m_userRepository,
-        m_authMiddleware
+    auto authService = std::make_shared<services::AuthService>(
+        userRepository,
+        authMiddleware
     );
 
     // 5. Создаем REST-сервер
@@ -84,11 +84,11 @@ bool Application::initialize()
         CONFIG.network.apiPort
     );
 
-    m_restServer->setAuthMiddleware(m_authMiddleware);
-    m_restServer->setAuthService(m_authService);
-    m_restServer->setPhaseService(m_phaseService);
-    m_restServer->setProjectService(m_projectService);
-    m_restServer->setUserService(m_userService);
+    m_restServer->setAuthMiddleware(authMiddleware);
+    m_restServer->setAuthService(authService);
+    m_restServer->setPhaseService(phaseService);
+    m_restServer->setProjectService(projectService);
+    m_restServer->setUserService(userService);
 
     if (!m_restServer->initialize())
     {
@@ -157,10 +157,6 @@ void Application::cleanup()
         m_database->shutdown();
         m_database.reset();
     }
-
-    m_userRepository.reset();
-    m_authService.reset();
-    m_authMiddleware.reset();
 }
 
 } // namespace server
