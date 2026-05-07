@@ -18,7 +18,10 @@ namespace server
 namespace services
 {
 class IAuthService;
+class IEdgeService;
 class IUserService;
+class IStateService;
+class IWorkflowService;
 }
 
 /**
@@ -73,7 +76,10 @@ public:
 
     void setAuthMiddleware(std::shared_ptr<IAuthMiddleware> middleware);
     void setAuthService(std::shared_ptr<services::IAuthService> authService);
+    void setEdgeService(std::shared_ptr<services::IEdgeService> edgeService);
     void setUserService(std::shared_ptr<services::IUserService> userService);
+    void setStateService(std::shared_ptr<services::IStateService> stateService);
+    void setWorkflowService(std::shared_ptr<services::IWorkflowService> workflowService);
 
 private:
     /**
@@ -180,7 +186,10 @@ private:
     std::vector<RouteInfo> m_routes;
 
     std::shared_ptr<services::IAuthService> m_authService;
+    std::shared_ptr<services::IEdgeService> m_edgeService;
     std::shared_ptr<services::IUserService> m_userService;
+    std::shared_ptr<services::IStateService> m_stateService;
+    std::shared_ptr<services::IWorkflowService> m_workflowService;
 };
 
 } // namespace server
