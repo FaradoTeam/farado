@@ -27,12 +27,8 @@ public:
     /**
      * @brief Конструктор обработчика аутентификации.
      * @param authService Сервис аутентификации
-     * @param authMiddleware Middleware для работы с JWT-токенами
      */
-    AuthHandler(
-        std::shared_ptr<services::IAuthService> authService,
-        std::shared_ptr<IAuthMiddleware> authMiddleware
-    );
+    explicit AuthHandler(std::shared_ptr<services::IAuthService> authService);
 
     /**
      * @brief Обрабатывает запрос на вход пользователя.
@@ -83,7 +79,6 @@ private:
 
 private:
     std::shared_ptr<services::IAuthService> m_authService;
-    std::shared_ptr<IAuthMiddleware> m_authMiddleware;
 };
 
 } // namespace handlers

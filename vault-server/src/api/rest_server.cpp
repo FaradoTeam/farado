@@ -124,30 +124,11 @@ void RestServer::setUserService(std::shared_ptr<services::IUserService> userServ
 
 void RestServer::registerRoutes()
 {
-    if (!m_authService
-        || !m_authMiddleware
-        || !m_phaseService
-        || !m_projectService
-        || !m_userService)
-    {
-        LOG_ERROR
-            << "Ошибка создания обработчиков для REST-сервера! "
-            << "Нет необходимых экземпляров сервисов бизнес логики.";
-        return;
-    }
-
-    // Создаем обработчики
-    auto authHandler = std::make_shared<handlers::AuthHandler>(
-        m_authService,
-        m_authMiddleware
-    );
-    auto itemsHandler = std::make_shared<handlers::ItemsHandler>();
-    auto phasesHandler = std::make_shared<handlers::PhasesHandler>(m_phaseService);
-    auto projectsHandler = std::make_shared<handlers::ProjectsHandler>(m_projectService);
-    auto usersHandler = std::make_shared<handlers::UsersHandler>(m_userService);
-
     // ===== Аутентификация =====
+    if (m_authService)
     {
+        auto authHandler = std::make_shared<handlers::AuthHandler>(m_authService);
+
         addRoutePost(
             "/auth/login",
             [authHandler](const auto& request, const auto& /*userId*/)
@@ -176,6 +157,8 @@ void RestServer::registerRoutes()
 
     // ===== Элементы =====
     {
+        auto itemsHandler = std::make_shared<handlers::ItemsHandler>();
+
         addRouteGet(
             "/api/items",
             [itemsHandler](const auto& request, const auto& userId)
@@ -217,7 +200,10 @@ void RestServer::registerRoutes()
     }
 
     // ===== Пользователи =====
+    if (m_userService)
     {
+        auto usersHandler = std::make_shared<handlers::UsersHandler>(m_userService);
+
         addRouteGet(
             "/api/users",
             [usersHandler](const auto& request, auto& userId)
@@ -256,7 +242,10 @@ void RestServer::registerRoutes()
     }
 
     // ===== Фазы =====
+    if (m_phaseService)
     {
+        auto phasesHandler = std::make_shared<handlers::PhasesHandler>(m_phaseService);
+
         addRouteGet(
             "/api/phases",
             [phasesHandler](const auto& request, const auto& userId)
@@ -295,7 +284,10 @@ void RestServer::registerRoutes()
     }
 
     // ===== Проекты =====
+    if (m_projectService)
     {
+        auto projectsHandler = std::make_shared<handlers::ProjectsHandler>(m_projectService);
+
         addRouteGet(
             "/api/projects",
             [projectsHandler](const auto& request, const auto& userId)
