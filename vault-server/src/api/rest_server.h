@@ -18,6 +18,8 @@ namespace server
 namespace services
 {
 class IAuthService;
+class IPhaseService;
+class IProjectService;
 class IUserService;
 }
 
@@ -73,6 +75,8 @@ public:
 
     void setAuthMiddleware(std::shared_ptr<IAuthMiddleware> middleware);
     void setAuthService(std::shared_ptr<services::IAuthService> authService);
+    void setPhaseService(std::shared_ptr<services::IPhaseService> phaseService);
+    void setProjectService(std::shared_ptr<services::IProjectService> projectService);
     void setUserService(std::shared_ptr<services::IUserService> userService);
 
 private:
@@ -144,6 +148,39 @@ private:
         bool isPublic = false
     );
 
+    inline void addRouteGet(
+        const std::string& path,
+        RouteHandler handler,
+        bool isPublic = false
+    )
+    {
+        addRoute(web::http::methods::GET, path, handler, isPublic);
+    }
+    inline void addRoutePost(
+        const std::string& path,
+        RouteHandler handler,
+        bool isPublic = false
+    )
+    {
+        addRoute(web::http::methods::POST, path, handler, isPublic);
+    }
+    inline void addRoutePut(
+        const std::string& path,
+        RouteHandler handler,
+        bool isPublic = false
+    )
+    {
+        addRoute(web::http::methods::PUT, path, handler, isPublic);
+    }
+    inline void addRouteDel(
+        const std::string& path,
+        RouteHandler handler,
+        bool isPublic = false
+    )
+    {
+        addRoute(web::http::methods::DEL, path, handler, isPublic);
+    }
+
     /**
      * @brief Находит маршрут, соответствующий запросу.
      *
@@ -180,6 +217,8 @@ private:
     std::vector<RouteInfo> m_routes;
 
     std::shared_ptr<services::IAuthService> m_authService;
+    std::shared_ptr<services::IPhaseService> m_phaseService;
+    std::shared_ptr<services::IProjectService> m_projectService;
     std::shared_ptr<services::IUserService> m_userService;
 };
 

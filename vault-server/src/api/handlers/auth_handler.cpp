@@ -10,7 +10,6 @@
 #include "common/dto/auth_response.h"
 #include "common/dto/change_password_request.h"
 
-
 #include "auth_handler.h"
 
 namespace server
@@ -18,20 +17,12 @@ namespace server
 namespace handlers
 {
 
-AuthHandler::AuthHandler(
-    std::shared_ptr<services::IAuthService> authService,
-    std::shared_ptr<IAuthMiddleware> authMiddleware
-)
+AuthHandler::AuthHandler(std::shared_ptr<services::IAuthService> authService)
     : m_authService(std::move(authService))
-    , m_authMiddleware(std::move(authMiddleware))
 {
     if (!m_authService)
     {
         LOG_WARN << "AuthHandler инициализирован без AuthService";
-    }
-    if (!m_authMiddleware)
-    {
-        LOG_WARN << "AuthHandler инициализирован без AuthMiddleware";
     }
 }
 

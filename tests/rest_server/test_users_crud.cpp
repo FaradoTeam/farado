@@ -9,6 +9,8 @@
 
 #include "tests/server_mocks/mock_auth_middleware.h"
 #include "tests/server_mocks/mock_auth_service.h"
+#include "tests/server_mocks/mock_phase_service.h"
+#include "tests/server_mocks/mock_project_service.h"
 #include "tests/server_mocks/mock_user_service.h"
 
 using namespace web;
@@ -25,6 +27,8 @@ struct UsersTestFixture
     {
         mockAuthMiddleware = std::make_shared<MockAuthMiddleware>();
         mockAuthService = std::make_shared<MockAuthService>();
+        mockPhaseService = std::make_shared<MockPhaseService>();
+        mockProjectService = std::make_shared<MockProjectService>();
         mockUserService = std::make_shared<MockUserService>();
 
         mockAuthMiddleware->setValidateRequestResult(true, "test_user_123");
@@ -32,6 +36,8 @@ struct UsersTestFixture
         server = std::make_unique<RestServer>("127.0.0.1", 18081);
         server->setAuthMiddleware(mockAuthMiddleware);
         server->setAuthService(mockAuthService);
+        server->setPhaseService(mockPhaseService);
+        server->setProjectService(mockProjectService);
         server->setUserService(mockUserService);
 
         BOOST_REQUIRE(server->initialize());
@@ -120,6 +126,8 @@ struct UsersTestFixture
     std::unique_ptr<RestServer> server;
     std::shared_ptr<MockAuthMiddleware> mockAuthMiddleware;
     std::shared_ptr<MockAuthService> mockAuthService;
+    std::shared_ptr<MockPhaseService> mockPhaseService;
+    std::shared_ptr<MockProjectService> mockProjectService;
     std::shared_ptr<MockUserService> mockUserService;
     std::thread serverThread;
 };

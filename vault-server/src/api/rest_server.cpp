@@ -9,9 +9,12 @@
 
 #include "api/handlers/auth_handler.h"
 #include "api/handlers/items_handler.h"
+#include "api/handlers/phases_handler.h"
+#include "api/handlers/projects_handler.h"
 #include "api/handlers/users_handler.h"
 
 #include "logic/iauth_service.h"
+#include "logic/iproject_service.h"
 #include "logic/iuser_service.h"
 
 #include "rest_server.h"
@@ -104,6 +107,16 @@ void RestServer::setAuthService(std::shared_ptr<services::IAuthService> authServ
     m_authService = authService;
 }
 
+void RestServer::setPhaseService(std::shared_ptr<services::IPhaseService> phaseService)
+{
+    m_phaseService = phaseService;
+}
+
+void RestServer::setProjectService(std::shared_ptr<services::IProjectService> projectService)
+{
+    m_projectService = projectService;
+}
+
 void RestServer::setUserService(std::shared_ptr<services::IUserService> userService)
 {
     m_userService = userService;
@@ -111,198 +124,228 @@ void RestServer::setUserService(std::shared_ptr<services::IUserService> userServ
 
 void RestServer::registerRoutes()
 {
-    if (!m_authService
-        || !m_authMiddleware
-        || !m_userService)
+    // ===== Аутентификация =====
+    if (m_authService)
     {
-        LOG_ERROR
-            << "Ошибка создания обработчиков для REST-сервера! "
-            << "Нет необходимых экземпляров сервисов бизнес логики.";
-        return;
+        auto authHandler = std::make_shared<handlers::AuthHandler>(m_authService);
+
+        addRoutePost(
+            "/auth/login",
+            [authHandler](const auto& request, const auto& /*userId*/)
+            {
+                authHandler->handleLogin(request);
+            },
+            true
+        );
+        addRoutePost(
+            "/auth/logout",
+            [authHandler](const auto& request, const auto& /*userId*/)
+            {
+                authHandler->handleLogout(request);
+            },
+            true
+        );
+        addRoutePost(
+            "/auth/change-password",
+            [authHandler](const auto& request, const auto& userId)
+            {
+                authHandler->handleChangePassword(request, userId);
+            },
+            false // требуется аутентификация
+        );
     }
 
-    // Создаем обработчики
-    auto itemsHandler = std::make_shared<handlers::ItemsHandler>();
-    auto authHandler = std::make_shared<handlers::AuthHandler>(
-        m_authService,
-        m_authMiddleware
-    );
-    auto usersHandler = std::make_shared<handlers::UsersHandler>(m_userService);
+    // ===== Элементы =====
+    {
+        auto itemsHandler = std::make_shared<handlers::ItemsHandler>();
 
-    // Публичные маршруты
-    addRoute(
-        web::http::methods::POST,
-        "/auth/login",
-        [authHandler](
-            const web::http::http_request& request,
-            const std::string& /*userId*/
-        )
-        {
-            authHandler->handleLogin(request);
-        },
-        true
-    );
+        addRouteGet(
+            "/api/items",
+            [itemsHandler](const auto& request, const auto& userId)
+            {
+                itemsHandler->handleGetItems(request, userId);
+            }
+        );
+        addRoutePost(
+            "/api/items",
+            [itemsHandler](const auto& request, const auto& userId)
+            {
+                itemsHandler->handleCreateItem(request, userId);
+            }
+        );
+        addRouteGet(
+            R"(/api/items/(\d+))",
+            [itemsHandler](const auto& request, const auto& userId)
+            {
+                itemsHandler->handleGetItem(request, userId);
+            },
+            false
+        );
+        addRoutePut(
+            R"(/api/items/(\d+))",
+            [itemsHandler](const auto& request, const auto& userId)
+            {
+                itemsHandler->handleUpdateItem(request, userId);
+            },
+            false
+        );
+        addRouteDel(
+            R"(/api/items/(\d+))",
+            [itemsHandler](const auto& request, auto& userId)
+            {
+                itemsHandler->handleDeleteItem(request, userId);
+            },
+            false
+        );
+    }
 
-    addRoute(
-        web::http::methods::POST,
-        "/auth/logout",
-        [authHandler](
-            const web::http::http_request& request,
-            const std::string& /*userId*/
-        )
-        {
-            authHandler->handleLogout(request);
-        },
-        true
-    );
+    // ===== Пользователи =====
+    if (m_userService)
+    {
+        auto usersHandler = std::make_shared<handlers::UsersHandler>(m_userService);
 
-    // Защищенный маршрут для смены пароля
-    addRoute(
-        web::http::methods::POST,
-        "/auth/change-password",
-        [authHandler](
-            const web::http::http_request& request,
-            const std::string& userId
-        )
-        {
-            authHandler->handleChangePassword(request, userId);
-        },
-        false // требуется аутентификация
-    );
+        addRouteGet(
+            "/api/users",
+            [usersHandler](const auto& request, auto& userId)
+            {
+                usersHandler->handleGetUsers(request, userId);
+            }
+        );
+        addRoutePost(
+            "/api/users",
+            [usersHandler](const auto& request, auto& userId)
+            {
+                usersHandler->handleCreateUser(request, userId);
+            }
+        );
+        addRouteGet(
+            R"(/api/users/(\d+))",
+            [usersHandler](const auto& request, auto& userId)
+            {
+                usersHandler->handleGetUser(request, userId);
+            }
+        );
+        addRoutePut(
+            R"(/api/users/(\d+))",
+            [usersHandler](const auto& request, auto& userId)
+            {
+                usersHandler->handleUpdateUser(request, userId);
+            }
+        );
+        addRouteDel(
+            R"(/api/users/(\d+))",
+            [usersHandler](const auto& request, auto& userId)
+            {
+                usersHandler->handleDeleteUser(request, userId);
+            }
+        );
+    }
 
-    // Защищенные маршруты (требуют аутентификации)
+    // ===== Фазы =====
+    if (m_phaseService)
+    {
+        auto phasesHandler = std::make_shared<handlers::PhasesHandler>(m_phaseService);
 
-    // Получение списка элементов
-    addRoute(
-        web::http::methods::GET,
-        "/api/items",
-        [itemsHandler](
-            const web::http::http_request& request,
-            const std::string& userId
-        )
-        {
-            itemsHandler->handleGetItems(request, userId);
-        }
-    );
+        addRouteGet(
+            "/api/phases",
+            [phasesHandler](const auto& request, const auto& userId)
+            {
+                phasesHandler->handleGetPhases(request, userId);
+            }
+        );
+        addRoutePost(
+            "/api/phases",
+            [phasesHandler](const auto& request, const auto& userId)
+            {
+                phasesHandler->handleCreatePhase(request, userId);
+            }
+        );
+        addRouteGet(
+            R"(/api/phases/(\d+))",
+            [phasesHandler](const auto& request, const auto& userId)
+            {
+                phasesHandler->handleGetPhase(request, userId);
+            }
+        );
+        addRoutePut(
+            R"(/api/phases/(\d+))",
+            [phasesHandler](const auto& request, const auto& userId)
+            {
+                phasesHandler->handleUpdatePhase(request, userId);
+            }
+        );
+        addRouteDel(
+            R"(/api/phases/(\d+))",
+            [phasesHandler](const auto& request, const auto& userId)
+            {
+                phasesHandler->handleDeletePhase(request, userId);
+            }
+        );
+    }
 
-    // Создание нового элемента
-    addRoute(
-        web::http::methods::POST,
-        "/api/items",
-        [itemsHandler](
-            const web::http::http_request& request,
-            const std::string& userId
-        )
-        {
-            itemsHandler->handleCreateItem(request, userId);
-        }
-    );
+    // ===== Проекты =====
+    if (m_projectService)
+    {
+        auto projectsHandler = std::make_shared<handlers::ProjectsHandler>(m_projectService);
 
-    // Получение элемента по ID (шаблон с параметром)
-    addRoute(
-        web::http::methods::GET,
-        R"(/api/items/(\d+))", // Регулярное выражение для извлечения ID
-        [itemsHandler](
-            const web::http::http_request& request,
-            const std::string& userId
-        )
-        {
-            itemsHandler->handleGetItem(request, userId);
-        },
-        false
-    );
+        addRouteGet(
+            "/api/projects",
+            [projectsHandler](const auto& request, const auto& userId)
+            {
+                projectsHandler->handleGetProjects(request, userId);
+            }
+        );
 
-    // Обновление элемента
-    addRoute(
-        web::http::methods::PUT,
-        R"(/api/items/(\d+))",
-        [itemsHandler](
-            const web::http::http_request& request,
-            const std::string& userId
-        )
-        {
-            itemsHandler->handleUpdateItem(request, userId);
-        },
-        false
-    );
+        addRoutePost(
+            "/api/projects",
+            [projectsHandler](const auto& request, const auto& userId)
+            {
+                projectsHandler->handleCreateProject(request, userId);
+            }
+        );
 
-    // Удаление элемента
-    addRoute(
-        web::http::methods::DEL,
-        R"(/api/items/(\d+))",
-        [itemsHandler](
-            const web::http::http_request& request,
-            const std::string& userId
-        )
-        {
-            itemsHandler->handleDeleteItem(request, userId);
-        },
-        false
-    );
+        addRouteGet(
+            R"(/api/projects/(\d+))",
+            [projectsHandler](const auto& request, const auto& userId)
+            {
+                projectsHandler->handleGetProject(request, userId);
+            }
+        );
 
-    // Эндпоинт для проверки работоспособности сервера (health check)
-    addRoute(
-        web::http::methods::GET,
-        "/health",
-        [](
-            const web::http::http_request& request,
-            const std::string& /*userId*/
-        )
-        {
-            web::json::value response;
-            response["status"] = web::json::value::string("ok");
-            response["timestamp"] = web::json::value::number(
-                std::chrono::duration_cast<std::chrono::seconds>(
-                    std::chrono::system_clock::now().time_since_epoch()
-                )
-                    .count()
-            );
-            request.reply(web::http::status_codes::OK, response);
-        },
-        true // публичный эндпоинт
-    );
+        addRoutePut(
+            R"(/api/projects/(\d+))",
+            [projectsHandler](const auto& request, const auto& userId)
+            {
+                projectsHandler->handleUpdateProject(request, userId);
+            }
+        );
 
-    addRoute(
-        web::http::methods::GET,
-        "/api/users",
-        [usersHandler](auto& req, auto& userId)
-        {
-            usersHandler->handleGetUsers(req, userId);
-        }
-    );
-    addRoute(
-        web::http::methods::POST,
-        "/api/users",
-        [usersHandler](auto& req, auto& userId)
-        {
-            usersHandler->handleCreateUser(req, userId);
-        }
-    );
-    addRoute(
-        web::http::methods::GET,
-        R"(/api/users/(\d+))",
-        [usersHandler](auto& req, auto& userId)
-        {
-            usersHandler->handleGetUser(req, userId);
-        }
-    );
-    addRoute(
-        web::http::methods::PUT,
-        R"(/api/users/(\d+))",
-        [usersHandler](auto& req, auto& userId)
-        {
-            usersHandler->handleUpdateUser(req, userId);
-        }
-    );
-    addRoute(
-        web::http::methods::DEL,
-        R"(/api/users/(\d+))",
-        [usersHandler](auto& req, auto& userId)
-        {
-            usersHandler->handleDeleteUser(req, userId);
-        }
-    );
+        addRouteDel(
+            R"(/api/projects/(\d+))",
+            [projectsHandler](const auto& request, const auto& userId)
+            {
+                projectsHandler->handleDeleteProject(request, userId);
+            }
+        );
+    }
 
+    // ===== Работоспособность сервера (Health check) =====
+    {
+        addRouteGet(
+            "/health",
+            [](const auto& request, const auto& /*userId*/)
+            {
+                const auto now = std::chrono::system_clock::now().time_since_epoch();
+                web::json::value response;
+                response["status"] = web::json::value::string("ok");
+                response["timestamp"] = web::json::value::number(
+                    std::chrono::duration_cast<std::chrono::seconds>(now).count()
+                );
+                request.reply(web::http::status_codes::OK, response);
+            },
+            true // публичный эндпоинт
+        );
+    }
     LOG_DEBUG
         << "Успешно зарегистрированные маршруты, всего: " << m_routes.size();
 }
