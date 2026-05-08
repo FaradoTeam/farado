@@ -66,6 +66,8 @@ set(COMMON_SOURCES
 set(TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/test_rest_server.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_token_expiration.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_field_types_crud.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_item_types_crud.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_users_crud.cpp
 )
 

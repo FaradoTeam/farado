@@ -16,7 +16,9 @@ namespace services
 class ItemTypeService final : public IItemTypeService
 {
 public:
-    explicit ItemTypeService(std::shared_ptr<repositories::IItemTypeRepository> itemTypeRepo);
+    explicit ItemTypeService(
+        std::shared_ptr<repositories::IItemTypeRepository> itemTypeRepo
+    );
 
     ItemTypesPage itemTypes(
         int page,
