@@ -1,10 +1,7 @@
-// vault-server/src/repo/sqlite/sqlite_item_type_repository.cpp
-
 #include <stdexcept>
 
 #include <boost/algorithm/string.hpp>
 
-#include "common/helpers/string_helper.h"
 #include "common/log/log.h"
 
 #include "storage/idatabase.h"
@@ -13,7 +10,7 @@
 
 namespace
 {
-dto::ItemType mapRowToItemType(db::IResultSet& rs) const
+dto::ItemType mapRowToItemType(db::IResultSet& rs)
 {
     dto::ItemType itemType;
 
@@ -112,12 +109,13 @@ std::pair<std::vector<dto::ItemType>, int64_t> SqliteItemTypeRepository::findAll
 
         // 2. Получаем страницу с типами элементов
         const int offset = (page - 1) * pageSize;
-        std::string selectSql = "SELECT id, workflowId, defaultStateId, caption, "
-                                "kind, defaultContent "
-                                "FROM ItemType "
-            + whereClause + " ORDER BY kind, caption LIMIT :limit OFFSET :offset";
-
-        auto stmt = conn->prepareStatement(selectSql);
+        auto stmt = conn->prepareStatement(
+            std::string()
+            + "SELECT id, workflowId, defaultStateId, caption, kind, defaultContent "
+            + "FROM ItemType "
+            + whereClause
+            + " ORDER BY kind, caption LIMIT :limit OFFSET :offset"
+        );
 
         if (workflowId.has_value())
             stmt->bindInt64("workflowId", workflowId.value());
@@ -191,15 +189,15 @@ int64_t SqliteItemTypeRepository::create(const dto::ItemType& itemType)
         return 0;
     }
 
-    // Проверка допустимых значений kind
+    // TODO: переместить в DTO проверку допустимых значений kind
     const std::vector<std::string> validKinds = {
         "issue", "folder", "test-case", "test-cycle", "test-execution", "requirement"
     };
-    if (std::find(validKinds.begin(), validKinds.end(), itemType.kind.value())
-        == validKinds.end())
+    if (std::find(validKinds.begin(), validKinds.end(), itemType.kind.value()) == validKinds.end())
     {
-        LOG_WARN << "Создание типа элемента: недопустимое значение kind '"
-                 << itemType.kind.value() << "'";
+        LOG_WARN
+            << "Создание типа элемента: недопустимое значение kind '"
+            << itemType.kind.value() << "'";
         return 0;
     }
 
@@ -255,14 +253,15 @@ bool SqliteItemTypeRepository::update(const dto::ItemType& itemType)
     // Проверка допустимых значений kind, если передаётся
     if (itemType.kind.has_value())
     {
+        // TODO: переместить в DTO проверку допустимых значений kind
         const std::vector<std::string> validKinds = {
             "issue", "folder", "test-case", "test-cycle", "test-execution", "requirement"
         };
-        if (std::find(validKinds.begin(), validKinds.end(), itemType.kind.value())
-            == validKinds.end())
+        if (std::find(validKinds.begin(), validKinds.end(), itemType.kind.value()) == validKinds.end())
         {
-            LOG_WARN << "update: недопустимое значение kind '"
-                     << itemType.kind.value() << "'";
+            LOG_WARN
+                << "update: недопустимое значение kind '"
+                << itemType.kind.value() << "'";
             return false;
         }
     }
@@ -342,8 +341,9 @@ bool SqliteItemTypeRepository::remove(int64_t id)
         const auto count = usageCount(id);
         if (count > 0)
         {
-            LOG_WARN << "remove: тип элемента с id=" << id
-                     << " используется " << count << " элементами";
+            LOG_WARN
+                << "remove: тип элемента с id=" << id
+                << " используется " << count << " элементами";
             return false;
         }
 
@@ -393,7 +393,9 @@ std::vector<dto::ItemType> SqliteItemTypeRepository::findByWorkflow(int64_t work
 
     if (workflowId <= 0)
     {
-        LOG_WARN << "findByWorkflow: неверный идентификатор рабочего процесса " << workflowId;
+        LOG_WARN
+            << "findByWorkflow: неверный идентификатор рабочего процесса "
+            << workflowId;
         return itemTypes;
     }
 

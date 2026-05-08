@@ -2,7 +2,6 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "common/helpers/string_helper.h"
 #include "common/log/log.h"
 
 #include "storage/idatabase.h"
@@ -11,7 +10,7 @@
 
 namespace
 {
-dto::FieldType mapRowToFieldType(db::IResultSet& rs) const
+dto::FieldType mapRowToFieldType(db::IResultSet& rs)
 {
     dto::FieldType fieldType;
 
@@ -109,12 +108,13 @@ std::pair<std::vector<dto::FieldType>, int64_t> SqliteFieldTypeRepository::findA
 
         // 2. Получаем страницу с типами полей
         const int offset = (page - 1) * pageSize;
-        std::string selectSql = "SELECT id, itemTypeId, caption, description, "
-                                "valueType, isBoardVisible "
-                                "FROM FieldType "
-            + whereClause + " ORDER BY caption LIMIT :limit OFFSET :offset";
-
-        auto stmt = conn->prepareStatement(selectSql);
+        auto stmt = conn->prepareStatement(
+            std::string()
+            + "SELECT id, itemTypeId, caption, description, valueType, isBoardVisible "
+            + "FROM FieldType "
+            + whereClause
+            + " ORDER BY caption LIMIT :limit OFFSET :offset"
+        );
 
         if (itemTypeId.has_value())
             stmt->bindInt64("itemTypeId", itemTypeId.value());
@@ -189,17 +189,18 @@ int64_t SqliteFieldTypeRepository::create(const dto::FieldType& fieldType)
         return 0;
     }
 
-    // Проверка допустимых значений valueType
+    // TODO: Перенести проверку допустимых значений valueType
     const std::vector<std::string> validValueTypes = {
         "String", "MarkdownText", "Integer", "Float", "Bool",
         "DateTime", "Date", "Uri", "Select", "SelectMulti",
         "ItemId", "UserId", "ProjectId", "PhaseId",
         "ItemsIds", "UsersIds", "ProjectsIds", "PhasesIds"
     };
-    if (std::find(validValueTypes.begin(), validValueTypes.end(), fieldType.valueType.value()) == validValueTypes.end())
+    if (validValueTypes.end() == std::find(validValueTypes.begin(), validValueTypes.end(), fieldType.valueType.value()))
     {
-        LOG_WARN << "Создание типа поля: недопустимое значение valueType '"
-                 << fieldType.valueType.value() << "'";
+        LOG_WARN
+            << "Создание типа поля: недопустимое значение valueType '"
+            << fieldType.valueType.value() << "'";
         return 0;
     }
 
@@ -252,6 +253,7 @@ bool SqliteFieldTypeRepository::update(const dto::FieldType& fieldType)
     // Проверка допустимых значений valueType, если передаётся
     if (fieldType.valueType.has_value())
     {
+        // TODO: Перенести проверку допустимых значений valueType
         const std::vector<std::string> validValueTypes = {
             "String", "MarkdownText", "Integer", "Float", "Bool",
             "DateTime", "Date", "Uri", "Select", "SelectMulti",
@@ -260,8 +262,9 @@ bool SqliteFieldTypeRepository::update(const dto::FieldType& fieldType)
         };
         if (std::find(validValueTypes.begin(), validValueTypes.end(), fieldType.valueType.value()) == validValueTypes.end())
         {
-            LOG_WARN << "update: недопустимое значение valueType '"
-                     << fieldType.valueType.value() << "'";
+            LOG_WARN
+                << "update: недопустимое значение valueType '"
+                << fieldType.valueType.value() << "'";
             return false;
         }
     }
@@ -341,8 +344,9 @@ bool SqliteFieldTypeRepository::remove(int64_t id)
         const auto count = usageCount(id);
         if (count > 0)
         {
-            LOG_WARN << "remove: тип поля с id=" << id
-                     << " используется " << count << " записями";
+            LOG_WARN
+                << "remove: тип поля с id=" << id
+                << " используется " << count << " записями";
             return false;
         }
 
