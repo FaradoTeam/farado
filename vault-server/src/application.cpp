@@ -4,15 +4,22 @@
 
 #include "common/log/log.h"
 
-#include "config.h"
 #include "application.h"
+#include "config.h"
 
 #include "api/middleware/impl/auth_middleware.h"
 #include "api/rest_server.h"
 
 #include "logic/impl/auth_service.h"
+#include "logic/impl/field_type_service.h"
+#include "logic/impl/item_type_service.h"
 #include "logic/impl/user_service.h"
 
+#include "repo/sqlite/sqlite_field_type_repository.h"
+#include "repo/sqlite/sqlite_item_type_repository.h"
+
+#include "repo/sqlite/sqlite_field_type_repository.h"
+#include "repo/sqlite/sqlite_item_type_repository.h"
 #include "repo/sqlite/sqlite_user_repository.h"
 
 #include "storage/database_factory.h"
@@ -76,6 +83,16 @@ bool Application::initialize()
 
     m_restServer->setAuthMiddleware(m_authMiddleware);
     m_restServer->setAuthService(m_authService);
+    m_restServer->setFieldTypeService(
+        std::make_shared<services::FieldTypeService>(
+            std::make_shared<repositories::SqliteFieldTypeRepository>(m_database)
+        )
+    );
+    m_restServer->setItemTypeService(
+        std::make_shared<services::ItemTypeService>(
+            std::make_shared<repositories::SqliteItemTypeRepository>(m_database)
+        )
+    );
     m_restServer->setUserService(m_userService);
 
     if (!m_restServer->initialize())

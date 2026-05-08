@@ -8,10 +8,14 @@
 #include "common/log/log.h"
 
 #include "api/handlers/auth_handler.h"
+#include "api/handlers/field_types_handler.h"
+#include "api/handlers/item_types_handler.h"
 #include "api/handlers/items_handler.h"
 #include "api/handlers/users_handler.h"
 
 #include "logic/iauth_service.h"
+#include "logic/ifield_type_service.h"
+#include "logic/iitem_type_service.h"
 #include "logic/iuser_service.h"
 
 #include "rest_server.h"
@@ -102,6 +106,16 @@ void RestServer::setAuthMiddleware(std::shared_ptr<IAuthMiddleware> middleware)
 void RestServer::setAuthService(std::shared_ptr<services::IAuthService> authService)
 {
     m_authService = authService;
+}
+
+void RestServer::setFieldTypeService(std::shared_ptr<services::IFieldTypeService> fieldTypeService)
+{
+    m_fieldTypeService = fieldTypeService;
+}
+
+void RestServer::setItemTypeService(std::shared_ptr<services::IItemTypeService> itemTypeService)
+{
+    m_itemTypeService = itemTypeService;
 }
 
 void RestServer::setUserService(std::shared_ptr<services::IUserService> userService)
@@ -265,43 +279,135 @@ void RestServer::registerRoutes()
     addRoute(
         web::http::methods::GET,
         "/api/users",
-        [usersHandler](auto& req, auto& userId)
+        [usersHandler](auto& request, auto& userId)
         {
-            usersHandler->handleGetUsers(req, userId);
+            usersHandler->handleGetUsers(request, userId);
         }
     );
     addRoute(
         web::http::methods::POST,
         "/api/users",
-        [usersHandler](auto& req, auto& userId)
+        [usersHandler](auto& request, auto& userId)
         {
-            usersHandler->handleCreateUser(req, userId);
+            usersHandler->handleCreateUser(request, userId);
         }
     );
     addRoute(
         web::http::methods::GET,
         R"(/api/users/(\d+))",
-        [usersHandler](auto& req, auto& userId)
+        [usersHandler](auto& request, auto& userId)
         {
-            usersHandler->handleGetUser(req, userId);
+            usersHandler->handleGetUser(request, userId);
         }
     );
     addRoute(
         web::http::methods::PUT,
         R"(/api/users/(\d+))",
-        [usersHandler](auto& req, auto& userId)
+        [usersHandler](auto& request, auto& userId)
         {
-            usersHandler->handleUpdateUser(req, userId);
+            usersHandler->handleUpdateUser(request, userId);
         }
     );
     addRoute(
         web::http::methods::DEL,
         R"(/api/users/(\d+))",
-        [usersHandler](auto& req, auto& userId)
+        [usersHandler](auto& request, auto& userId)
         {
-            usersHandler->handleDeleteUser(req, userId);
+            usersHandler->handleDeleteUser(request, userId);
         }
     );
+
+    if (m_fieldTypeService)
+    {
+        auto fieldTypesHandler = std::make_shared<handlers::FieldTypesHandler>(m_fieldTypeService);
+
+        addRoute(
+            web::http::methods::GET,
+            "/api/field-types",
+            [fieldTypesHandler](const auto& request, const auto& userId)
+            {
+                fieldTypesHandler->handleGetFieldTypes(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::POST,
+            "/api/field-types",
+            [fieldTypesHandler](const auto& request, const auto& userId)
+            {
+                fieldTypesHandler->handleCreateFieldType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::GET,
+            R"(/api/field-types/(\d+))",
+            [fieldTypesHandler](const auto& request, const auto& userId)
+            {
+                fieldTypesHandler->handleGetFieldType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::PUT,
+            R"(/api/field-types/(\d+))",
+            [fieldTypesHandler](const auto& request, const auto& userId)
+            {
+                fieldTypesHandler->handleUpdateFieldType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::DEL,
+            R"(/api/field-types/(\d+))",
+            [fieldTypesHandler](const auto& request, const auto& userId)
+            {
+                fieldTypesHandler->handleDeleteFieldType(request, userId);
+            }
+        );
+    }
+
+    if (m_itemTypeService)
+    {
+        auto itemTypesHandler = std::make_shared<handlers::ItemTypesHandler>(m_itemTypeService);
+
+        addRoute(
+            web::http::methods::GET,
+            "/api/item-types",
+            [itemTypesHandler](const auto& request, const auto& userId)
+            {
+                itemTypesHandler->handleGetItemTypes(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::POST,
+            "/api/item-types",
+            [itemTypesHandler](const auto& request, const auto& userId)
+            {
+                itemTypesHandler->handleCreateItemType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::GET,
+            R"(/api/item-types/(\d+))",
+            [itemTypesHandler](const auto& request, const auto& userId)
+            {
+                itemTypesHandler->handleGetItemType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::PUT,
+            R"(/api/item-types/(\d+))",
+            [itemTypesHandler](const auto& request, const auto& userId)
+            {
+                itemTypesHandler->handleUpdateItemType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::DEL,
+            R"(/api/item-types/(\d+))",
+            [itemTypesHandler](const auto& request, const auto& userId)
+            {
+                itemTypesHandler->handleDeleteItemType(request, userId);
+            }
+        );
+    }
 
     LOG_DEBUG
         << "Успешно зарегистрированные маршруты, всего: " << m_routes.size();
