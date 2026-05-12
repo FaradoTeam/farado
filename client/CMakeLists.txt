@@ -1,17 +1,12 @@
 project(biome-client)
 
-set(CMAKE_AUTOMOC ON)   # Включаем Meta-Object Compiler для сигналов/слотов
-set(CMAKE_AUTORCC ON)   # Включаем автоматическую компиляцию .qrc ресурсов
-
-find_package(Qt6 REQUIRED)
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTORCC ON)
 
 qt_add_executable(${PROJECT_NAME}
     main.cpp
 )
 
-# 4. Подключаем QML модуль к проекту
-#    Этот вызов автоматически создаст и свяжет модуль 'MyAppModule',
-#    сгенерирует qmldir и qmltypes, и настроит qmlcachegen.
 qt_add_resources(${PROJECT_NAME} "qml_resources"
     PREFIX "/"
     FILES
@@ -23,16 +18,34 @@ qt_add_resources(${PROJECT_NAME} "qml_resources"
         qml/theme/qmldir
 )
 
-# 5. Явно указываем, что исполняемый файл должен быть связан с нашим QML модулем
-target_link_libraries(${PROJECT_NAME}
-    PRIVATE
-        qt::qt
-)
+if(EMSCRIPTEN)
+    message(STATUS "Configuring ${PROJECT_NAME} for WebAssembly")
 
-# 6. Для статической сборки: импортируем все необходимые QML плагины
-qt_import_qml_plugins(${PROJECT_NAME})
+    # Используем уже найденный Qt (Conan через toolchain покажет путь)
+    find_package(Qt6 REQUIRED COMPONENTS Core Gui Quick Qml QuickControls2)
+    target_link_libraries(${PROJECT_NAME} PRIVATE
+        Qt6::Core Qt6::Gui Qt6::Quick Qt6::Qml Qt6::QuickControls2
+    )
+    
+    # Многопоточность: включаем поддержку pthreads в Emscripten
+    target_link_options(${PROJECT_NAME} PRIVATE
+        -sUSE_PTHREADS=1
+        # Дополнительно помогает избежать блокировки главного потока
+        -sPROXY_TO_PTHREAD=1
+        # Если нужен рост памяти (по необходимости)
+        -sALLOW_MEMORY_GROWTH=1
+        -sINITIAL_MEMORY=64MB
+    )
 
-set_target_properties(
-    ${PROJECT_NAME} PROPERTIES
-    RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/client
-)
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/wasm_out
+        SUFFIX ".html"
+    )
+else()
+    find_package(Qt6 REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE qt::qt)
+    qt_import_qml_plugins(${PROJECT_NAME})
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/client
+    )
+endif()

@@ -1,0 +1,25 @@
+include(default)
+
+[settings]
+os=Emscripten
+arch=wasm
+compiler=emcc
+compiler.version=5.0.3
+compiler.cppstd=23
+compiler.libcxx=libc++
+compiler.threads=posix
+
+[platform_tool_requires]
+m4/[*]
+autoconf/[*]
+libtool/[*]
+
+
+[tool_requires]
+emsdk/5.0.3
+
+[conf]
+tools.cmake.cmaketoolchain:generator=Ninja
+tools.build:exelinkflags=['-sALLOW_MEMORY_GROWTH=1', '-sINITIAL_MEMORY=64MB']
+tools.build:sharedlinkflags=['-sALLOW_MEMORY_GROWTH=1', '-sINITIAL_MEMORY=64MB']
+tools.build:cxxflags = ["-DNO_XATTR=1"]

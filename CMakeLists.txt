@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 3.15.7)
 # ---------------------------------------------------------------------------- #
 option(BUILD_VAULT_SERVER "Build Biome Vault Server" ON)
 option(BUILD_CLIENT "Build Biome Client" ON)
+option(BUILD_CLIENT_WASM "Build client for WebAssembly" ON)
 option(BUILD_MIGRATOR "Build database migration tool" ON)
 # ---------------------------------------------------------------------------- #
 
@@ -16,11 +17,22 @@ option(BUILD_REPO_TESTS "Build tests for repository" ON)
 option(BUILD_API_TESTS "Build tests for rest server" ON)
 # ---------------------------------------------------------------------------- #
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
-set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan_provider.cmake
-)
+# === АВТОМАТИЧЕСКОЕ ОПРЕДЕЛЕНИЕ WEBASSEMBLY ===
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    message(STATUS "Emscripten detected: building only client for WebAssembly")
+    set(BUILD_VAULT_SERVER OFF)
+    set(BUILD_MIGRATOR OFF)
+    set(ENABLE_TESTING OFF)
+else()
+    list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+    
+    set(CMAKE_PROJECT_TOP_LEVEL_INCLUDES
+        ${CMAKE_CURRENT_SOURCE_DIR}/cmake/conan_provider.cmake
+    )
+endif()
+
+
 
 project(biome)
 
