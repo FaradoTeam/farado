@@ -12,6 +12,8 @@
 
 #include "logic/impl/auth_service.h"
 #include "logic/impl/edge_service.h"
+#include "logic/impl/field_type_service.h"
+#include "logic/impl/item_type_service.h"
 #include "logic/impl/phase_service.h"
 #include "logic/impl/project_service.h"
 #include "logic/impl/state_service.h"
@@ -19,6 +21,8 @@
 #include "logic/impl/workflow_service.h"
 
 #include "repo/sqlite/sqlite_edge_repository.h"
+#include "repo/sqlite/sqlite_field_type_repository.h"
+#include "repo/sqlite/sqlite_item_type_repository.h"
 #include "repo/sqlite/sqlite_phase_repository.h"
 #include "repo/sqlite/sqlite_project_repository.h"
 #include "repo/sqlite/sqlite_state_repository.h"
@@ -107,6 +111,16 @@ bool Application::initialize()
     m_restServer->setAuthMiddleware(authMiddleware);
     m_restServer->setAuthService(authService);
     m_restServer->setEdgeService(edgeService);
+    m_restServer->setFieldTypeService(
+        std::make_shared<services::FieldTypeService>(
+            std::make_shared<repositories::SqliteFieldTypeRepository>(m_database)
+        )
+    );
+    m_restServer->setItemTypeService(
+        std::make_shared<services::ItemTypeService>(
+            std::make_shared<repositories::SqliteItemTypeRepository>(m_database)
+        )
+    );
     m_restServer->setPhaseService(phaseService);
     m_restServer->setProjectService(projectService);
     m_restServer->setUserService(userService);

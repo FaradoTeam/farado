@@ -9,6 +9,8 @@
 
 #include "api/handlers/auth_handler.h"
 #include "api/handlers/edges_handler.h"
+#include "api/handlers/field_types_handler.h"
+#include "api/handlers/item_types_handler.h"
 #include "api/handlers/items_handler.h"
 #include "api/handlers/phases_handler.h"
 #include "api/handlers/projects_handler.h"
@@ -17,6 +19,8 @@
 #include "api/handlers/workflows_handler.h"
 
 #include "logic/iauth_service.h"
+#include "logic/ifield_type_service.h"
+#include "logic/iitem_type_service.h"
 #include "logic/iproject_service.h"
 #include "logic/iuser_service.h"
 
@@ -108,6 +112,16 @@ void RestServer::setAuthMiddleware(std::shared_ptr<IAuthMiddleware> middleware)
 void RestServer::setAuthService(std::shared_ptr<services::IAuthService> authService)
 {
     m_authService = authService;
+}
+
+void RestServer::setFieldTypeService(std::shared_ptr<services::IFieldTypeService> fieldTypeService)
+{
+    m_fieldTypeService = fieldTypeService;
+}
+
+void RestServer::setItemTypeService(std::shared_ptr<services::IItemTypeService> itemTypeService)
+{
+    m_itemTypeService = itemTypeService;
 }
 
 void RestServer::setEdgeService(std::shared_ptr<services::IEdgeService> edgeService)
@@ -337,7 +351,6 @@ void RestServer::registerRoutes()
                 projectsHandler->handleUpdateProject(request, userId);
             }
         );
-
         addRouteDel(
             R"(/api/projects/(\d+))",
             [projectsHandler](const auto& request, const auto& userId)
@@ -347,7 +360,54 @@ void RestServer::registerRoutes()
         );
     }
 
-    // Рабочие процессы (Workflows)
+    // ===== Типы полей =====
+    if (m_fieldTypeService)
+    {
+        auto fieldTypesHandler = std::make_shared<handlers::FieldTypesHandler>(m_fieldTypeService);
+
+        addRoute(
+            web::http::methods::GET,
+            "/api/field-types",
+            [fieldTypesHandler](const auto& request, const auto& userId)
+            {
+                fieldTypesHandler->handleGetFieldTypes(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::POST,
+            "/api/field-types",
+            [fieldTypesHandler](const auto& request, const auto& userId)
+            {
+                fieldTypesHandler->handleCreateFieldType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::GET,
+            R"(/api/field-types/(\d+))",
+            [fieldTypesHandler](const auto& request, const auto& userId)
+            {
+                fieldTypesHandler->handleGetFieldType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::PUT,
+            R"(/api/field-types/(\d+))",
+            [fieldTypesHandler](const auto& request, const auto& userId)
+            {
+                fieldTypesHandler->handleUpdateFieldType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::DEL,
+            R"(/api/field-types/(\d+))",
+            [fieldTypesHandler](const auto& request, const auto& userId)
+            {
+                fieldTypesHandler->handleDeleteFieldType(request, userId);
+            }
+        );
+    }
+
+    // ===== Рабочие процессы =====
     if (m_workflowService)
     {
         auto workflowsHandler = std::make_shared<handlers::WorkflowsHandler>(m_workflowService);
@@ -393,7 +453,54 @@ void RestServer::registerRoutes()
         );
     }
 
-    // Состояния (States)
+    // ===== Типы элементов =====
+    if (m_itemTypeService)
+    {
+        auto itemTypesHandler = std::make_shared<handlers::ItemTypesHandler>(m_itemTypeService);
+
+        addRoute(
+            web::http::methods::GET,
+            "/api/item-types",
+            [itemTypesHandler](const auto& request, const auto& userId)
+            {
+                itemTypesHandler->handleGetItemTypes(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::POST,
+            "/api/item-types",
+            [itemTypesHandler](const auto& request, const auto& userId)
+            {
+                itemTypesHandler->handleCreateItemType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::GET,
+            R"(/api/item-types/(\d+))",
+            [itemTypesHandler](const auto& request, const auto& userId)
+            {
+                itemTypesHandler->handleGetItemType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::PUT,
+            R"(/api/item-types/(\d+))",
+            [itemTypesHandler](const auto& request, const auto& userId)
+            {
+                itemTypesHandler->handleUpdateItemType(request, userId);
+            }
+        );
+        addRoute(
+            web::http::methods::DEL,
+            R"(/api/item-types/(\d+))",
+            [itemTypesHandler](const auto& request, const auto& userId)
+            {
+                itemTypesHandler->handleDeleteItemType(request, userId);
+            }
+        );
+    }
+
+    // ===== Состояния =====
     if (m_stateService)
     {
         auto statesHandler = std::make_shared<handlers::StatesHandler>(m_stateService);
@@ -439,7 +546,7 @@ void RestServer::registerRoutes()
         );
     }
 
-    // Переходы (Edges)
+    // ===== Переходы =====
     if (m_edgeService)
     {
         auto edgesHandler = std::make_shared<handlers::EdgesHandler>(m_edgeService);
@@ -503,6 +610,7 @@ void RestServer::registerRoutes()
             true // публичный эндпоинт
         );
     }
+
     LOG_DEBUG
         << "Успешно зарегистрированные маршруты, всего: " << m_routes.size();
 }

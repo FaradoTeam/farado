@@ -15,6 +15,8 @@ set(SERVER_SRC
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/storage/sqlite/sqlite_result_set.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/storage/sqlite/sqlite_statement.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/storage/sqlite/sqlite_transaction.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/repo/sqlite/sqlite_field_type_repository.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/repo/sqlite/sqlite_item_type_repository.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/repo/sqlite/sqlite_edge_repository.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/repo/sqlite/sqlite_state_repository.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/repo/sqlite/sqlite_user_repository.cpp
@@ -25,6 +27,8 @@ set(SERVER_SRC
 
 set(TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/test_main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_sqlite_field_type_repository.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_sqlite_item_type_repository.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sqlite_edge_repository.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sqlite_state_repository.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_sqlite_user_repository.cpp
