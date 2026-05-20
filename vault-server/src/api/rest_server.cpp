@@ -8,10 +8,13 @@
 #include "common/log/log.h"
 
 #include "api/handlers/auth_handler.h"
+#include "api/handlers/edges_handler.h"
 #include "api/handlers/items_handler.h"
 #include "api/handlers/phases_handler.h"
 #include "api/handlers/projects_handler.h"
+#include "api/handlers/states_handler.h"
 #include "api/handlers/users_handler.h"
+#include "api/handlers/workflows_handler.h"
 
 #include "logic/iauth_service.h"
 #include "logic/iproject_service.h"
@@ -107,6 +110,11 @@ void RestServer::setAuthService(std::shared_ptr<services::IAuthService> authServ
     m_authService = authService;
 }
 
+void RestServer::setEdgeService(std::shared_ptr<services::IEdgeService> edgeService)
+{
+    m_edgeService = edgeService;
+}
+
 void RestServer::setPhaseService(std::shared_ptr<services::IPhaseService> phaseService)
 {
     m_phaseService = phaseService;
@@ -120,6 +128,16 @@ void RestServer::setProjectService(std::shared_ptr<services::IProjectService> pr
 void RestServer::setUserService(std::shared_ptr<services::IUserService> userService)
 {
     m_userService = userService;
+}
+
+void RestServer::setStateService(std::shared_ptr<services::IStateService> stateService)
+{
+    m_stateService = stateService;
+}
+
+void RestServer::setWorkflowService(std::shared_ptr<services::IWorkflowService> workflowService)
+{
+    m_workflowService = workflowService;
 }
 
 void RestServer::registerRoutes()
@@ -325,6 +343,145 @@ void RestServer::registerRoutes()
             [projectsHandler](const auto& request, const auto& userId)
             {
                 projectsHandler->handleDeleteProject(request, userId);
+            }
+        );
+    }
+
+    // Рабочие процессы (Workflows)
+    if (m_workflowService)
+    {
+        auto workflowsHandler = std::make_shared<handlers::WorkflowsHandler>(m_workflowService);
+
+        addRouteGet(
+            "/api/workflows",
+            [workflowsHandler](auto& request, auto& userId)
+            {
+                workflowsHandler->handleGetWorkflows(request, userId);
+            }
+        );
+
+        addRoutePost(
+            "/api/workflows",
+            [workflowsHandler](auto& request, auto& userId)
+            {
+                workflowsHandler->handleCreateWorkflow(request, userId);
+            }
+        );
+
+        addRouteGet(
+            R"(/api/workflows/(\d+))",
+            [workflowsHandler](auto& request, auto& userId)
+            {
+                workflowsHandler->handleGetWorkflow(request, userId);
+            }
+        );
+
+        addRoutePut(
+            R"(/api/workflows/(\d+))",
+            [workflowsHandler](auto& request, auto& userId)
+            {
+                workflowsHandler->handleUpdateWorkflow(request, userId);
+            }
+        );
+
+        addRouteDel(
+            R"(/api/workflows/(\d+))",
+            [workflowsHandler](auto& request, auto& userId)
+            {
+                workflowsHandler->handleDeleteWorkflow(request, userId);
+            }
+        );
+    }
+
+    // Состояния (States)
+    if (m_stateService)
+    {
+        auto statesHandler = std::make_shared<handlers::StatesHandler>(m_stateService);
+
+        addRouteGet(
+            "/api/states",
+            [statesHandler](auto& request, auto& userId)
+            {
+                statesHandler->handleGetStates(request, userId);
+            }
+        );
+
+        addRoutePost(
+            "/api/states",
+            [statesHandler](auto& request, auto& userId)
+            {
+                statesHandler->handleCreateState(request, userId);
+            }
+        );
+
+        addRouteGet(
+            R"(/api/states/(\d+))",
+            [statesHandler](auto& request, auto& userId)
+            {
+                statesHandler->handleGetState(request, userId);
+            }
+        );
+
+        addRoutePut(
+            R"(/api/states/(\d+))",
+            [statesHandler](auto& request, auto& userId)
+            {
+                statesHandler->handleUpdateState(request, userId);
+            }
+        );
+
+        addRouteDel(
+            R"(/api/states/(\d+))",
+            [statesHandler](auto& request, auto& userId)
+            {
+                statesHandler->handleDeleteState(request, userId);
+            }
+        );
+    }
+
+    // Переходы (Edges)
+    if (m_edgeService)
+    {
+        auto edgesHandler = std::make_shared<handlers::EdgesHandler>(m_edgeService);
+
+        addRouteGet(
+            "/api/edges",
+            [edgesHandler](auto& request, auto& userId)
+            {
+                edgesHandler->handleGetEdges(request, userId);
+            }
+        );
+
+        addRoutePost(
+            "/api/edges",
+            [edgesHandler](auto& request, auto& userId)
+            {
+                edgesHandler->handleCreateEdge(request, userId);
+            }
+        );
+
+        addRouteGet(
+            R"(/api/edges/(\d+))",
+            [edgesHandler](auto& request, auto& userId)
+            {
+                edgesHandler->handleGetEdge(request, userId);
+            }
+        );
+
+        addRouteDel(
+            R"(/api/edges/(\d+))",
+            [edgesHandler](auto& request, auto& userId)
+            {
+                edgesHandler->handleDeleteEdge(request, userId);
+            }
+        );
+
+        // Специальный маршрут: получение всех переходов для workflow
+        addRouteGet(
+            R"(/api/workflows/(\d+)/edges)",
+            [edgesHandler](auto& request, auto& userId)
+            {
+                edgesHandler->handleGetWorkflowEdges(request, userId);
             }
         );
     }

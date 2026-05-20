@@ -12,22 +12,6 @@ namespace server
 {
 
 class RestServer;
-class AuthMiddleware;
-
-namespace services
-{
-class AuthService;
-class IPhaseService;
-class IProjectService;
-class IUserService;
-}
-
-namespace repositories
-{
-class IPhaseRepository;
-class IProjectRepository;
-class IUserRepository;
-}
 
 class Application final
 {

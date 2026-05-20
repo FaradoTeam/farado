@@ -12,9 +12,12 @@ set(SERVER_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/middleware/impl/auth_middleware.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/handlers/auth_handler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/handlers/items_handler.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/handlers/edges_handler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/handlers/phases_handler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/handlers/projects_handler.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/handlers/users_handler.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/handlers/states_handler.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../../vault-server/src/api/handlers/workflows_handler.cpp
 )
 
 set(COMMON_SOURCES
@@ -66,9 +69,12 @@ set(COMMON_SOURCES
 set(TEST_SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/test_rest_server.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_token_expiration.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_edges_crud.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_phases_crud.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_projects_crud.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/test_users_crud.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_states_crud.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/test_workflows_crud.cpp
 )
 
 add_executable(

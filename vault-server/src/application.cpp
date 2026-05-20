@@ -11,13 +11,19 @@
 #include "api/rest_server.h"
 
 #include "logic/impl/auth_service.h"
+#include "logic/impl/edge_service.h"
 #include "logic/impl/phase_service.h"
 #include "logic/impl/project_service.h"
+#include "logic/impl/state_service.h"
 #include "logic/impl/user_service.h"
+#include "logic/impl/workflow_service.h"
 
+#include "repo/sqlite/sqlite_edge_repository.h"
 #include "repo/sqlite/sqlite_phase_repository.h"
 #include "repo/sqlite/sqlite_project_repository.h"
+#include "repo/sqlite/sqlite_state_repository.h"
 #include "repo/sqlite/sqlite_user_repository.h"
+#include "repo/sqlite/sqlite_workflow_repository.h"
 
 #include "storage/database_factory.h"
 
@@ -66,6 +72,20 @@ bool Application::initialize()
     auto projectRepository = std::make_shared<repositories::SqliteProjectRepository>(m_database);
     auto projectService = std::make_shared<services::ProjectService>(projectRepository);
 
+    auto workflowRepository = std::make_shared<repositories::SqliteWorkflowRepository>(m_database);
+    auto stateRepository = std::make_shared<repositories::SqliteStateRepository>(m_database);
+    auto edgeRepository = std::make_shared<repositories::SqliteEdgeRepository>(m_database);
+
+    auto workflowService = std::make_shared<services::WorkflowService>(
+        workflowRepository, stateRepository, edgeRepository
+    );
+    auto stateService = std::make_shared<services::StateService>(
+        stateRepository, edgeRepository, workflowRepository
+    );
+    auto edgeService = std::make_shared<services::EdgeService>(
+        edgeRepository, stateRepository
+    );
+
     // 3. Создаем middleware для аутентификации
     // TODO: Вынести секретный ключ в конфиг
     auto authMiddleware = std::make_shared<AuthMiddleware>(
@@ -86,9 +106,12 @@ bool Application::initialize()
 
     m_restServer->setAuthMiddleware(authMiddleware);
     m_restServer->setAuthService(authService);
+    m_restServer->setEdgeService(edgeService);
     m_restServer->setPhaseService(phaseService);
     m_restServer->setProjectService(projectService);
     m_restServer->setUserService(userService);
+    m_restServer->setStateService(stateService);
+    m_restServer->setWorkflowService(workflowService);
 
     if (!m_restServer->initialize())
     {
