@@ -23,11 +23,6 @@ public:
     explicit SqliteUserRepository(std::shared_ptr<db::IDatabase> database);
     ~SqliteUserRepository() override = default;
 
-    SqliteUserRepository(const SqliteUserRepository&) = delete;
-    SqliteUserRepository& operator=(const SqliteUserRepository&) = delete;
-    SqliteUserRepository(SqliteUserRepository&&) = delete;
-    SqliteUserRepository& operator=(SqliteUserRepository&&) = delete;
-
     std::optional<dto::User> findByLogin(const std::string& login) override;
     std::optional<dto::User> findById(int64_t id) override;
     std::string passwordHash(int64_t userId) override;
