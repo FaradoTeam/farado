@@ -11,16 +11,23 @@
 #include "api/rest_server.h"
 
 #include "logic/impl/auth_service.h"
+#include "logic/impl/edge_service.h"
 #include "logic/impl/field_type_service.h"
 #include "logic/impl/item_type_service.h"
+#include "logic/impl/phase_service.h"
+#include "logic/impl/project_service.h"
+#include "logic/impl/state_service.h"
 #include "logic/impl/user_service.h"
+#include "logic/impl/workflow_service.h"
 
+#include "repo/sqlite/sqlite_edge_repository.h"
 #include "repo/sqlite/sqlite_field_type_repository.h"
 #include "repo/sqlite/sqlite_item_type_repository.h"
-
-#include "repo/sqlite/sqlite_field_type_repository.h"
-#include "repo/sqlite/sqlite_item_type_repository.h"
+#include "repo/sqlite/sqlite_phase_repository.h"
+#include "repo/sqlite/sqlite_project_repository.h"
+#include "repo/sqlite/sqlite_state_repository.h"
 #include "repo/sqlite/sqlite_user_repository.h"
+#include "repo/sqlite/sqlite_workflow_repository.h"
 
 #include "storage/database_factory.h"
 
@@ -59,20 +66,40 @@ bool Application::initialize()
         return false;
     }
 
-    // 2. Создаем репозиторий пользователей
-    m_userRepository = std::make_shared<repositories::SqliteUserRepository>(m_database);
-    m_userService = std::make_shared<services::UserService>(m_userRepository);
+    // 2. Создаем репозитории и сервисы
+    auto userRepository = std::make_shared<repositories::SqliteUserRepository>(m_database);
+    auto userService = std::make_shared<services::UserService>(userRepository);
+
+    auto phaseRepository = std::make_shared<repositories::SqlitePhaseRepository>(m_database);
+    auto phaseService = std::make_shared<services::PhaseService>(phaseRepository);
+
+    auto projectRepository = std::make_shared<repositories::SqliteProjectRepository>(m_database);
+    auto projectService = std::make_shared<services::ProjectService>(projectRepository);
+
+    auto workflowRepository = std::make_shared<repositories::SqliteWorkflowRepository>(m_database);
+    auto stateRepository = std::make_shared<repositories::SqliteStateRepository>(m_database);
+    auto edgeRepository = std::make_shared<repositories::SqliteEdgeRepository>(m_database);
+
+    auto workflowService = std::make_shared<services::WorkflowService>(
+        workflowRepository, stateRepository, edgeRepository
+    );
+    auto stateService = std::make_shared<services::StateService>(
+        stateRepository, edgeRepository, workflowRepository
+    );
+    auto edgeService = std::make_shared<services::EdgeService>(
+        edgeRepository, stateRepository
+    );
 
     // 3. Создаем middleware для аутентификации
     // TODO: Вынести секретный ключ в конфиг
-    m_authMiddleware = std::make_shared<AuthMiddleware>(
+    auto authMiddleware = std::make_shared<AuthMiddleware>(
         "your-very-long-secret-key-that-is-at-least-32-bytes-long!"
     );
 
     // 4. Создаем сервис аутентификации
-    m_authService = std::make_shared<services::AuthService>(
-        m_userRepository,
-        m_authMiddleware
+    auto authService = std::make_shared<services::AuthService>(
+        userRepository,
+        authMiddleware
     );
 
     // 5. Создаем REST-сервер
@@ -81,8 +108,9 @@ bool Application::initialize()
         CONFIG.network.apiPort
     );
 
-    m_restServer->setAuthMiddleware(m_authMiddleware);
-    m_restServer->setAuthService(m_authService);
+    m_restServer->setAuthMiddleware(authMiddleware);
+    m_restServer->setAuthService(authService);
+    m_restServer->setEdgeService(edgeService);
     m_restServer->setFieldTypeService(
         std::make_shared<services::FieldTypeService>(
             std::make_shared<repositories::SqliteFieldTypeRepository>(m_database)
@@ -93,7 +121,11 @@ bool Application::initialize()
             std::make_shared<repositories::SqliteItemTypeRepository>(m_database)
         )
     );
-    m_restServer->setUserService(m_userService);
+    m_restServer->setPhaseService(phaseService);
+    m_restServer->setProjectService(projectService);
+    m_restServer->setUserService(userService);
+    m_restServer->setStateService(stateService);
+    m_restServer->setWorkflowService(workflowService);
 
     if (!m_restServer->initialize())
     {
@@ -162,10 +194,6 @@ void Application::cleanup()
         m_database->shutdown();
         m_database.reset();
     }
-
-    m_userRepository.reset();
-    m_authService.reset();
-    m_authMiddleware.reset();
 }
 
 } // namespace server
